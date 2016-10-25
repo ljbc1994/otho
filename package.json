@@ -1,0 +1,25 @@
+{
+  "name": "otho",
+  "version": "0.0.1",
+  "description": "A tiny javascript library for handling and animating images",
+  "main": "index.js",
+  "scripts": {
+    "test": "test"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/fulhamcrazy/otho.git"
+  },
+  "keywords": [
+    "images",
+    "javascript",
+    "library",
+    "animation"
+  ],
+  "author": "Louie Colgan",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/fulhamcrazy/otho/issues"
+  },
+  "homepage": "https://github.com/fulhamcrazy/otho#readme"
+}
