@@ -1,7 +1,10 @@
-import { Watch } from './watch';
+import { Watcher } from './watcher';
 import { isArray } from '../utils/is-array';
 import { isFunction } from '../utils/is-function';
 
+/*
+ *
+ */
 export default class Handler {
     
     /*
@@ -11,13 +14,17 @@ export default class Handler {
         els,
         error,
         placehold,
+        forcePlacehold,
         imageLoaded,
-        imageLoading
+        imageLoading       
     } ) {
         
         this.els = isArray( els ) ? els : isFunction( els ) ? els.call( this ) : [ els ];    
+        
         this.error = error;
         this.placehold = placehold;
+        this.forcePlacehold = forcePlacehold;
+        
         this.imageLoaded = imageLoaded;
         this.imageLoading = imageLoading;
         
@@ -26,6 +33,7 @@ export default class Handler {
         this.loaded = function() { };
         this.success = function() { };
         this.progress = function() { };
+        
     }
     
     /*
@@ -33,22 +41,24 @@ export default class Handler {
      */
     init() {
         
-       let self = this;
+        let self = this;
         
-       for ( let i = 0; i < self.els.length; i++ ) {
+        for ( let i = 0; i < self.els.length; i++ ) {
            
-           let watcher = new Watcher( {
-               el: self.els[ i ],
-               error: self.error,
-               placehold: self.placehold,
-               loaded: self._imageLoaded.bind( self ),
-               failed: self._imageFailed.bind( self ),
-               success: self._imagesSuccess.bind( self )
-           } );
+            let watcher = new Watcher( {
+                el: self.els[ i ],
+                error: self.error,
+                placehold: self.placehold,
+                imageLoaded: self.imageLoaded,
+                imageLoading: self.imageLoading,
+                loaded: self._imageLoaded.bind( self ),
+                failed: self._imageFailed.bind( self ),
+                success: self._imagesSuccess.bind( self )
+            } );
                
-           self.watchers.push( watcher );
+            self.watchers.push( watcher );
            
-       }
+        }
         
         return self;
         
@@ -104,19 +114,30 @@ export default class Handler {
         
         this.success = cb.bind( ctx || this );
         
+        return this;
+        
     }
     
+    /*
+     *
+     */
     fail( cb, ctx ) {
         
         this.fail = cb.bind( ctx || this );
         
+        return this;
+        
     }
     
+    /*
+     *
+     */
     progress( cb, ctx ) {
         
         this.progress = cb.bind( ctx || this );
         
+        return this;
+        
     }
-    
     
 }
