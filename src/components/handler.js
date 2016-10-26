@@ -1,6 +1,7 @@
-import { Watcher } from './watcher';
-import { isArray } from '../utils/is-array';
-import { isFunction } from '../utils/is-function';
+import Watcher from './watcher';
+import isArray from '../utils/is-array';
+import isFunction from '../utils/is-function';
+import isNodeList from '../utils/is-node-list';
 
 /*
  *
@@ -19,7 +20,9 @@ export default class Handler {
         imageLoading       
     } ) {
         
-        this.els = isArray( els ) ? els : isFunction( els ) ? els.call( this ) : [ els ];    
+        this.els = this.getElements( els ); 
+        
+        console.log( this.els );
         
         this.error = error;
         this.placehold = placehold;
@@ -29,10 +32,39 @@ export default class Handler {
         this.imageLoading = imageLoading;
         
         this.watchers = [];
+        
         this.fail = function() { };
         this.loaded = function() { };
         this.success = function() { };
         this.progress = function() { };
+        
+    }
+    
+    /*
+     *
+     */
+    getElements( els ) {
+        
+        console.log(els);
+        
+        if ( isArray( els ) ) {
+            
+            return els;
+            
+        } else if ( isFunction( els ) ) {
+            
+            return els.call( this );
+            
+        } else if ( isNodeList( els ) ) {
+            
+            return Array.prototype.slice.call(els, 0);
+            
+        } else {
+            
+            return [ els ];
+            
+        }
+        
         
     }
     

@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        
+        <style>
+            
+            img {
+                width: 100px;
+                height: 100px;
+            }
+            
+            img.o-image-loaded {
+                opacity: 1;
+            }
+            
+            img.o-image-loading {
+                animation: Pulse 1s infinite ease-in-out;
+                -webkit-animation: Pulse 1s infinite ease-in-out;
+            }
+            
+            @keyframes Pulse {
+                0% {
+                    opacity: 0.6;
+                }
+                50% {
+                    opacity: 0.9;
+                }
+                100% {
+                    opacity: 0.6;
+                }
+            }
+            
+            @-webkit-keyframes Pulse {
+                0% {
+                    opacity: 0.6;
+                }
+                50% {
+                    opacity: 0.9;
+                }
+                100% {
+                    opacity: 0.6;
+                }
+            }
+            
+        </style>
+    </head>
+    <body>
+        
+        <img src="http://placehold.it/200x200">
+        <img src="https://upload.wikimedia.org/wikipedia/commons/d/d8/Deerfire_high_res_edit.jpg">
+        <img src="http://cdn.wonderfulengineering.com/wp-content/uploads/2014/03/high-resolution-wallpapers-12.jpg">
+        <img src="http://www.astrocruise.com/galaxies/M31_0811hires.jpg">
+        <img src="http://img08.deviantart.net/2d03/i/2012/099/3/d/high_res_magnification_by_darkhunter2009-d4vj70j.jpg">
+        <img src="https://upload.wikimedia.org/wikipedia/commons/3/3d/Soufriere_Church_high_res.jpg">
+        <img src="http://www3.open.ac.uk/events/2009225_50828.jpg">
+        <img src="http://www.rtjsjg.com/data/out/243/5859184-high-resolution-images.jpg">
+        <img src="http://bestscreenwallpaper.pro/wp-content/uploads/2014/09/High-Resolution-Wallpaper-HD-WAllPAPERS-24.jpg">
+        <img src="https://upload.wikimedia.org/wikipedia/commons/1/11/Varkala_Beach_High_Res.jpg">
+        <img src="http://wallpaperrs.com/uploads/nature/earth-autumn-fall-highres-lake-wood-pastel-photography-colorful-reflection-nature-opus-orange-red-fo-14297829753.jpg">
+        <img src="http://newsevents.arts.ac.uk/files/2016/05/Joshua-von-Uexkull-Pepparkakor-High-Res.jpg">
+        <img src="http://wallpaperrs.com/uploads/nature/earth-wave-opus-highres-horizon-water-sea-sunny-stunning-wallpaper-89559-142977870826.jpg">
+        <img src="http://wont.wrk"/>
+        <img src="https://upload.wikimedia.org/wikipedia/commons/3/3d/Soufriere_Church_high_res.jpg"/>
+        <img src="http://www3.open.ac.uk/events/2009225_50828.jpg"/>
+        <img src="http://www.rtjsjg.com/data/out/243/5859184-high-resolution-images.jpg"/>
+        
+        <script src="../dist/otho.min.js"></script>
+        <script>
+            Otho.load({
+                placehold: 'http://placehold.it/200x200',
+                error: 'http://placehold.it/500x500'
+            });
+        </script>    
+    </body>
+</html>
