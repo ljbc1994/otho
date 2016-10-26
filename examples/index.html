@@ -65,11 +65,18 @@
         <img src="http://www.rtjsjg.com/data/out/243/5859184-high-resolution-images.jpg"/>
         
         <script src="../dist/otho.min.js"></script>
+        
         <script>
-            Otho.load({
+            
+            var otho = Otho.load({
                 placehold: 'http://placehold.it/200x200',
-                error: 'http://placehold.it/500x500'
-            });
-        </script>    
+                error: 'http://placehold.it/500x500',
+                progress: function( el, progress ) {
+                    console.log(progress)
+                }
+            })
+                
+        </script>
+            
     </body>
 </html>

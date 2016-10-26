@@ -8,8 +8,6 @@ let Otho = {
         
         let options = extend( defaultOptions, userOptions );
         
-        console.log(options);
-        
         return new Handler( options ).init();
         
     }

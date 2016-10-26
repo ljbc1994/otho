@@ -17,12 +17,15 @@ export default class Handler {
         placehold,
         forcePlacehold,
         imageLoaded,
-        imageLoading       
+        imageLoading,
+        
+        success,
+        fail,
+        progress,
+        loaded
     } ) {
         
         this.els = this.getElements( els ); 
-        
-        console.log( this.els );
         
         this.error = error;
         this.placehold = placehold;
@@ -33,19 +36,17 @@ export default class Handler {
         
         this.watchers = [];
         
-        this.fail = function() { };
-        this.loaded = function() { };
-        this.success = function() { };
-        this.progress = function() { };
-        
+        this.fail = fail || function() { };
+        this.loaded = loaded || function() { };
+        this.success = success || function() { };
+        this.progress = progress || function() { };
+           
     }
     
     /*
      *
      */
     getElements( els ) {
-        
-        console.log(els);
         
         if ( isArray( els ) ) {
             
@@ -57,7 +58,7 @@ export default class Handler {
             
         } else if ( isNodeList( els ) ) {
             
-            return Array.prototype.slice.call(els, 0);
+            return Array.prototype.slice.call( els, 0 );
             
         } else {
             
@@ -107,7 +108,11 @@ export default class Handler {
         
         self.loaded( watcher );
         
-        self.progress( watcher, { total: toLoad, loaded: haveLoaded } );
+        self.progress( watcher, { 
+            total: toLoad, 
+            loaded: haveLoaded, 
+            percent: Math.round( ( haveLoaded / toLoad ) * 100 ) 
+        } );
         
         if ( toLoad === haveLoaded ) {
             
@@ -127,7 +132,7 @@ export default class Handler {
         self.fail ( watcher );
         
     }
-
+    
     /*
      *
      */
@@ -136,39 +141,6 @@ export default class Handler {
         let self = this;
         
         self.success( self.watchers );
-        
-    }
-    
-    /*
-     *
-     */
-    success( cb, ctx ) {
-        
-        this.success = cb.bind( ctx || this );
-        
-        return this;
-        
-    }
-    
-    /*
-     *
-     */
-    fail( cb, ctx ) {
-        
-        this.fail = cb.bind( ctx || this );
-        
-        return this;
-        
-    }
-    
-    /*
-     *
-     */
-    progress( cb, ctx ) {
-        
-        this.progress = cb.bind( ctx || this );
-        
-        return this;
         
     }
     

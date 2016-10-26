@@ -1,3 +1,6 @@
+/*
+ *
+ */
 // Kudos to http://stackoverflow.com/questions/7238177/how-to-detect-htmlcollection-nodelist-in-javascript
 export default function isNodeList( nodes ) {
     
