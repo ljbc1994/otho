@@ -1,7 +1,9 @@
-/*
- *
+/**
+ * @function
+ * See https://gomakethings.com/vanilla-javascript-version-of-jquery-extend/ for full description.
+ * @param {Object} arguments - List of objects that need to be extended.
+ * @returns {Object} - Extended object
  */
-// Kudos to https://gomakethings.com/vanilla-javascript-version-of-jquery-extend/
 export default function extend() {
     
     var extended = {},

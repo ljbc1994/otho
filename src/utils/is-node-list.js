@@ -1,7 +1,10 @@
-/*
- *
+/**
+ * @function
+ * Determines whether the supplied element is a node list.
+ * See http://stackoverflow.com/questions/7238177/how-to-detect-htmlcollection-nodelist-in-javascript for a detailed description.
+ * @param nodes - The nodes to check.
+ * @returns {Boolean} - Whether the element is a node list
  */
-// Kudos to http://stackoverflow.com/questions/7238177/how-to-detect-htmlcollection-nodelist-in-javascript
 export default function isNodeList( nodes ) {
     
     var stringRepr = Object.prototype.toString.call(nodes);

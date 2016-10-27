@@ -1,14 +1,19 @@
 import { removeClass, addClass } from '../utils/style-manipulation';
 
-/*
- *
+/**
+ * @class
+ * Watches the status of the image load, manipulating the
+ * associated element and firing callbacks depending on the
+ * image's status.
  */
 export default class Watcher {
     
-    /*
-     *
+    /**
+     * @function
+     * Initialising the configuration for the watcher.
+     * @param {Object} - Defined options.
      */
-    constructor({
+    constructor( {
         el,
         error,
         placehold,
@@ -16,26 +21,29 @@ export default class Watcher {
         failed,
         imageLoaded,
         imageLoading
-    }) {
+    } ) {
         
         this.el = el;
         
-        this.error = error || this.el.getAttribute( 'data-error' );
-        this.placehold = placehold || this.el.getAttribute( 'data-placehold' );
+        this.error = error || this.el.getAttribute( 'data-o-error' );
+        this.placehold = placehold || this.el.getAttribute( 'data-o-placehold' );
+        this.imageLoaded = imageLoaded || this.el.getAttribute( 'data-o-loaded' );
+        this.imageLoading = imageLoading || this.el.getAttribute( 'data-o-loading' );
         
         this.loaded = loaded;
         this.failed = failed;
         
         this.toLoad = this.el.src;
-        this.imageLoaded = imageLoaded;
-        this.imageLoading = imageLoading;
         this.hasLoaded = false;
         this.init();
         
     }
     
-    /*
-     *
+    /**
+     * @function
+     * Indicate that the image is loading, swap out the image's
+     * src for the specified placeholder src and defer loading of 
+     * the image to an Image object.  
      */
     init() {
         
@@ -50,8 +58,11 @@ export default class Watcher {
         
     }
     
-    /*
-     *
+    /**
+     * @function
+     * The image has loaded succesfully, swap out the image's 
+     * placeholder src for the loaded src. Also, fire associated
+     * callback. 
      */
     _loaded() {
         
@@ -66,8 +77,11 @@ export default class Watcher {
         
     }
     
-    /*
-     *
+    /**
+     * @function
+     * The image has loaded unsuccesfully, swap out the image's 
+     * placeholder src for the error src. Also, fire associated
+     * callback. 
      */
     _error() {
         

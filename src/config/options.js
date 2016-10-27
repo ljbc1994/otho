@@ -1,3 +1,7 @@
+/**
+ * @object
+ * Default options for the handler.
+ */
 export default {
     els: document.getElementsByTagName('img'),
     error: '',

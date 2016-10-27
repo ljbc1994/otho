@@ -3,13 +3,18 @@ import isArray from '../utils/is-array';
 import isFunction from '../utils/is-function';
 import isNodeList from '../utils/is-node-list';
 
-/*
- *
+/**
+ * @class
+ * Responsible for initialising the watchers, passing
+ * through the configuration and ensuring user defined
+ * callbacks are executed when necessary.
  */
 export default class Handler {
     
-    /*
-     *
+    /**
+     * @function
+     * Initialising the configuration for the handler.
+     * @param {Object} - amalgamation of default and user defined options.
      */
     constructor( { 
         els,
@@ -27,15 +32,19 @@ export default class Handler {
         
         this.els = this.getElements( els ); 
         
+        // Image src for placehold or if error occurs.
         this.error = error;
         this.placehold = placehold;
+        
         this.forcePlacehold = forcePlacehold;
         
+        // Classes to add to the image / holder.
         this.imageLoaded = imageLoaded;
         this.imageLoading = imageLoading;
         
         this.watchers = [];
         
+        // Callback functions.
         this.fail = fail || function() { };
         this.loaded = loaded || function() { };
         this.success = success || function() { };
@@ -43,8 +52,11 @@ export default class Handler {
            
     }
     
-    /*
-     *
+    /**
+     * @function
+     * Ensures different types of elements are outputted as an array.
+     * @param {Array|Function|Object} els - Elements that are either holders or elements.
+     * @returns {Array} - An array of images / holders.
      */
     getElements( els ) {
         
@@ -68,8 +80,12 @@ export default class Handler {
             
     }
     
-    /*
-     *
+    /**
+     * @function
+     * Initialises the watchers with default configuration,
+     * note this can be overidden by "data-o" attributes on
+     * the watcher's element.
+     * @returns {Object::Handler} Handler - Instance of the handler 
      */
     init() {
         
@@ -96,8 +112,12 @@ export default class Handler {
         
     }
     
-    /*
-     *
+    /**
+     * @function 
+     * Called when an image has been loaded, computes the
+     * progress of the watchers as well as firing other
+     * callbacks.
+     * @params {Object::Watcher} watcher - The object that listens to the image status.
      */
     _imageLoaded( watcher ) {
         
@@ -121,8 +141,11 @@ export default class Handler {
         
     }
     
-    /*
-     *
+    /**
+     * @function
+     * Called when an image has failed to load, and fires
+     * a callback.
+     * @params {Object::Watcher} watcher - The object that listens to the image status.
      */
     _imageFailed( watcher ) {
         
@@ -132,8 +155,11 @@ export default class Handler {
         
     }
     
-    /*
-     *
+    /**
+     * @function
+     * Called when all of the images have been loaded, and fires
+     * a callback.
+     * @params {Object::Watcher} watcher - The object that listens to the image status.
      */
     _imagesSuccess() {
         
