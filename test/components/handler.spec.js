@@ -50,4 +50,147 @@ describe( 'Handler', function() {
         
     } );
     
+    describe( '#_imageLoaded( watcher )', function() {
+        
+        it( 'should trigger the loaded callback with the loaded watcher when executed', function(done) {
+            
+            var self = this;
+            
+            var handler = new Handler( { 
+                
+                els: [ self.image ],
+                
+                loaded: function( watcher ) {
+                
+                    assert.equal( self.image, watcher.el );
+                
+                    done();
+                    
+                }
+                
+            } );
+            
+            handler.init();
+            
+            handler._imageLoaded( { el: self.image } );
+            
+        } );
+        
+        /* Correct progress values should be split into separate test cases */
+        it( 'should trigger the progress callback with the correct progress values when executed', function(done) {
+            
+            var self = this;
+            
+            var handler = new Handler( { 
+                
+                els: [ self.image ],
+                
+                progress: function( watcher, progress ) {
+                
+                    assert.equal( self.image, watcher.el );
+                    assert.equal( 1, progress.total );
+                    assert.equal( 1, progress.loaded );
+                    assert.equal( 100, progress.percent );
+                    
+                    done();
+                    
+                }
+                
+            } );
+            
+            handler.init();
+            
+            handler.watchers = [ { hasLoaded: true } ];
+            
+            handler._imageLoaded( { el: self.image } );
+            
+        } );
+        
+        it( 'should trigger the images successful callback with the correct number of watchers', function(done) {
+            
+            var self = this;
+            
+            var handler = new Handler( { 
+                
+                els: [ self.image ],
+                
+                success: function( watchers ) {
+                    
+                    assert.equal( 1, watchers.length );
+                    
+                    done();
+                    
+                }
+                
+            } );
+            
+            handler.init();
+            
+            handler.watchers = [ { hasLoaded: true } ];
+            
+            handler._imageLoaded( { el: self.image } );
+            
+        } );
+        
+    } );
+    
+
+    describe( '#_imageFailed( watcher )', function() {
+       
+        it( 'should trigger the fail callback when executed', function(done) {
+            
+            var self = this;
+            
+            var handler = new Handler( { 
+                
+                els: [ self.image ],
+                
+                fail: function( watcher ) {
+                    
+                    assert.equal( self.image, watcher.el );
+                    
+                    done();
+                    
+                }
+                
+            } );
+            
+            handler.init();
+            
+            handler._imageFailed( { el: self.image } );
+            
+        } );
+        
+    });
+    
+    describe( '#_imagesSuccess( watcher )', function() {
+       
+        it( 'should trigger the success callback when executed', function(done) {
+            
+            var self = this;
+            
+            var handler = new Handler( { 
+                
+                els: [ self.image ],
+                
+                success: function( watchers ) {
+                    
+                    assert.equal( 1, watchers.length );
+                    
+                    done();
+                    
+                }
+                
+            } );
+            
+            handler.init();
+            
+            handler.watchers = [ { el: self.image } ];
+            
+            handler._imagesSuccess();
+            
+        } );
+        
+    });
+    
 });
