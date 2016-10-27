@@ -10,6 +10,10 @@ export function addClass( el /* , classes to add */ ) {
     let toAdd = Array.prototype.slice.call( arguments, 1 );
     let classes = el.className.split( ' ' );
     
+    if (toAdd.length === 0) {
+        throw new Error( "You need to provide at least one class" );
+    } 
+    
     el.className = classes
         .concat( toAdd )
         .join( ' ' )
@@ -27,6 +31,10 @@ export function addClass( el /* , classes to add */ ) {
 export function removeClass( el /*, classes to remove */ ) {
     
     let toRemove = Array.prototype.slice.call( arguments, 1 );
+    
+    if (toRemove.length === 0) {
+        throw new Error( "You need to provide at least one class" );
+    } 
     
     el.className = el.className
         .split( ' ' )

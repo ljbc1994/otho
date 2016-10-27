@@ -66,10 +66,10 @@ export default class Watcher {
      */
     _loaded() {
         
-        this.el.src = this.pseudo.src;
-        
         removeClass( this.el, this.imageLoading );
         addClass( this.el, this.imageLoaded );
+        
+        this.el.src = this.pseudo.src;
         
         this.hasLoaded = true;
         
@@ -85,9 +85,9 @@ export default class Watcher {
      */
     _error() {
         
-        this.el.src = this.error;
-        
         removeClass( this.el, this.imageLoading );
+        
+        this.el.src = this.error;
         
         this.failed( this );
         
