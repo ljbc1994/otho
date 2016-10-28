@@ -4,7 +4,7 @@
   "description": "A tiny javascript library for handling and animating images",
   "main": "index.js",
   "scripts": {
-    "build": "browserify src/index.js -t [ babelify --presets [ es2015 ] ] | uglifyjs > dist/otho.min.js",
+    "build": "browserify src/index.js -s Otho -t babelify | uglifyjs > dist/otho.min.js",
     "test": "mocha --compilers js:babel-register ./test",
     "cover": "babel-node node_modules/babel-istanbul/lib/cli.js cover node_modules/mocha/bin/_mocha -- test --recursive"
   },

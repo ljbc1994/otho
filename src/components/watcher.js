@@ -25,10 +25,10 @@ export default class Watcher {
         
         this.el = el;
         
-        this.error = error || this.el.getAttribute( 'data-o-error' );
-        this.placehold = placehold || this.el.getAttribute( 'data-o-placehold' );
-        this.imageLoaded = imageLoaded || this.el.getAttribute( 'data-o-loaded' );
-        this.imageLoading = imageLoading || this.el.getAttribute( 'data-o-loading' );
+        this.error = this.el.getAttribute( 'data-o-error' ) || error;
+        this.placehold = this.el.getAttribute( 'data-o-placehold' ) || placehold;
+        this.imageLoaded = this.el.getAttribute( 'data-o-loaded' ) || imageLoaded;
+        this.imageLoading = this.el.getAttribute( 'data-o-loading' ) || imageLoading;
         
         this.loaded = loaded;
         this.failed = failed;

@@ -1,4 +1,3 @@
-
 // Utils
 require('./utils/is-array.spec.js');
 require('./utils/is-function.spec.js');
