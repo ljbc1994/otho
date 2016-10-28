@@ -2,10 +2,12 @@
   "name": "otho",
   "version": "0.0.1",
   "description": "A tiny javascript library for handling and animating images",
-  "main": "index.js",
+  "main": "dist/otho.js",
   "scripts": {
-    "build": "browserify src/index.js -s Otho -t babelify | uglifyjs > dist/otho.min.js",
-    "test": "mocha --compilers js:babel-register ./test",
+    "build:unmin": "browserify src/index.js -s Otho -t babelify -o dist/otho.js",
+    "build:min": "browserify src/index.js -s Otho -t babelify | uglifyjs > dist/otho.min.js",
+    "build": "npm run build:unmin && npm run build:min && node build",
+    "test": "mocha --compilers js:babel-register",
     "cover": "babel-node node_modules/babel-istanbul/lib/cli.js cover node_modules/mocha/bin/_mocha --report lcovonly test --recursive"
   },
   "repository": {
