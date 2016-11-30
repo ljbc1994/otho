@@ -45,7 +45,9 @@ export default class Watcher {
      * @function
      * Indicate that the image is loading, swap out the image's
      * src for the specified placeholder src and defer loading of 
-     * the image to an Image object.  
+     * the image to an Image object.
+     * @params {Boolean} reinit - Whether to setup the watcher again.
+     * @returns {Object} - The watcher.
      */
     init( reinit ) {
         

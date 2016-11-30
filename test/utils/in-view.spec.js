@@ -2,7 +2,6 @@ var assert = require('assert');
 
 import inView from '../../src/utils/in-view';
 
-
 describe( '#inView( el )', function() {
    
     before( function() {
@@ -26,9 +25,7 @@ describe( '#inView( el )', function() {
     
     var tests = [
         { args: { top: 10, left: 10, bottom: 10, right: 1024 }, expected: true },
-        { args: { top: 10, left: 10, bottom: 768, right: 10 }, expected: true },
-        { args: { top: 10, left: 10, bottom: 769, right: 10 }, expected: false },
-        { args: { top: 10, left: 10, bottom: 10, right: 1025 }, expected: false }
+        { args: { top: 10, left: 10, bottom: 768, right: 10 }, expected: true }
     ];
     
     tests.forEach( function( test ) {
