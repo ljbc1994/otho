@@ -26,7 +26,7 @@ export default function extend() {
                 
                 if ( deep && Object.prototype.toString.call(obj[prop]) === '[object Object]' ) {
                     
-                    extended[prop] = _helper.extend( true, extended[prop], obj[prop] );
+                    extended[prop] = extend( true, extended[prop], obj[prop] );
                 
                 } else {
                     

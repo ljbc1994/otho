@@ -75,6 +75,7 @@
     </head>
     <body>
         
+        <!-- otho -->
         <img class="el" data-o-src="http://placehold.it/200x200">
         <img class="el" data-o-src="https://upload.wikimedia.org/wikipedia/commons/d/d8/Deerfire_high_res_edit.jpg">
         <img class="el" data-o-src="http://cdn.wonderfulengineering.com/wp-content/uploads/2014/03/high-resolution-wallpapers-12.jpg">
@@ -97,6 +98,11 @@
         </div>
         <div class="el example-background" data-o-background="true"></div>
         
+        <!-- otho2 -->
+        <img class="el2" data-o-src="https://upload.wikimedia.org/wikipedia/commons/d/d8/Deerfire_high_res_edit.jpg">
+        <img class="el2" data-o-src="https://upload.wikimedia.org/wikipedia/commons/3/3d/Soufriere_Church_high_res.jpg"/>
+        <img class="el2" data-o-src="http://www3.open.ac.uk/events/2009225_50828.jpg"/>
+        
         <script src="../../dist/otho.min.js"></script>
         
         <script>
@@ -106,6 +112,12 @@
                 placehold: 'http://placehold.it/200x200',
                 error: 'http://placehold.it/500x500',
                 inView: true
+            });
+            
+            var otho2 = Otho.load({
+                els: document.getElementsByClassName('el2'),
+                placehold: 'http://placehold.it/200x200',
+                error: 'http://placehold.it/500x500'
             });
             
         </script>

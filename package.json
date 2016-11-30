@@ -7,6 +7,7 @@
     "build:unmin": "browserify src/index.js -s Otho -t babelify -o dist/otho.js",
     "build:min": "browserify src/index.js -s Otho -t babelify | uglifyjs > dist/otho.min.js",
     "build": "npm run build:unmin && npm run build:min && node build/banner",
+    "lint": "eslint src/**/*",
     "watch": "node build/mi5 -s src -c \"npm run build\"",
     "test": "mocha --compilers js:babel-register -r jsdom-global/register",
     "cover": "babel-node node_modules/babel-istanbul/lib/cli.js cover node_modules/mocha/bin/_mocha --report lcovonly test --recursive"
@@ -42,6 +43,7 @@
     "colors": "^1.1.2",
     "command-line-args": "^3.0.3",
     "coveralls": "^2.11.14",
+    "eslint": "^3.11.1",
     "jsdom": "^9.8.3",
     "jsdom-global": "^2.1.0",
     "mocha": "^3.1.2",
