@@ -348,7 +348,7 @@ var Handler = function () {
          * Called when an image has been loaded, computes the
          * progress of the watchers as well as firing other
          * callbacks.
-         * @params {Object::Watcher} watcher - The object that listens to the image status.
+         * @param {Object::Watcher} watcher - The object that listens to the image status.
          */
 
     }, {
@@ -379,7 +379,7 @@ var Handler = function () {
          * @function
          * Called when an image has failed to load, and fires
          * a callback.
-         * @params {Object::Watcher} watcher - The object that listens to the image status.
+         * @param {Object::Watcher} watcher - The object that listens to the image status.
          */
 
     }, {
@@ -397,7 +397,7 @@ var Handler = function () {
          * @function
          * Called when all of the images have been loaded, and fires
          * a callback.
-         * @params {Object::Watcher} watcher - The object that listens to the image status.
+         * @param {Object::Watcher} watcher - The object that listens to the image status.
          */
 
     }, {
@@ -522,7 +522,9 @@ var Watcher = function () {
      * @function
      * Indicate that the image is loading, swap out the image's
      * src for the specified placeholder src and defer loading of 
-     * the image to an Image object.  
+     * the image to an Image object.
+     * @param {Boolean} reinit - Whether to setup the watcher again.
+     * @returns {Object} - The watcher.
      */
 
 
@@ -625,7 +627,7 @@ var Watcher = function () {
          * Determine whether the element contains an image or is just the
          * image itself and set the element's image to either the element
          * or the first child image.
-         * @params {Object} el - The element
+         * @param {Object} el - The element
          */
 
     }, {
@@ -666,7 +668,7 @@ var Watcher = function () {
         key: '_getImage',
         value: function _getImage() {
 
-            return this.background ? (0, _styleManipulation.getBackgroundImage)(this.img) : this.img.src;
+            return this.background ? (0, _styleManipulation.getBackgroundImage)(this.img) : this.img.getAttribute('data-o-src');
         }
 
         /**
@@ -741,7 +743,7 @@ exports.default = {
 'use strict';
 
 Object.defineProperty(exports, "__esModule", {
-    value: true
+  value: true
 });
 exports.load = load;
 
@@ -759,11 +761,17 @@ var _extend2 = _interopRequireDefault(_extend);
 
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
+/**
+ * @function
+ * Load Otho and parse through the user's options.
+ * @params {Object} userOptions - The user defined options  
+ * @returns {Array<Watcher>|Promise} - List of watchers and a promise containing watchers
+ */
 function load(userOptions) {
 
-    var options = (0, _extend2.default)(_options2.default, userOptions);
+  var options = (0, _extend2.default)(_options2.default, userOptions);
 
-    return new _handler2.default(options).init();
+  return new _handler2.default(options).init();
 };
 
 },{"./components/handler":2,"./config/options":4,"./utils/extend":7}],6:[function(require,module,exports){

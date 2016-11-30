@@ -46,7 +46,7 @@ export default class Watcher {
      * Indicate that the image is loading, swap out the image's
      * src for the specified placeholder src and defer loading of 
      * the image to an Image object.
-     * @params {Boolean} reinit - Whether to setup the watcher again.
+     * @param {Boolean} reinit - Whether to setup the watcher again.
      * @returns {Object} - The watcher.
      */
     init( reinit ) {
@@ -143,7 +143,7 @@ export default class Watcher {
      * Determine whether the element contains an image or is just the
      * image itself and set the element's image to either the element
      * or the first child image.
-     * @params {Object} el - The element
+     * @param {Object} el - The element
      */
     _getElement( el ) {
         
@@ -179,7 +179,7 @@ export default class Watcher {
      */
     _getImage() {
         
-        return this.background ? getBackgroundImage( this.img ) : this.img.src;
+        return this.background ? getBackgroundImage( this.img ) : this.img.getAttribute( 'data-o-src' );
         
     }
     

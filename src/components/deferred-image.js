@@ -67,11 +67,7 @@ export default class DeferredImage {
      * Initialising the configuration for the deferred image.
      * @param {Object} - The image src as well as callback methods.
      */
-    constructor( {
-        src,
-        loaded,
-        failed
-    } ) {
+    constructor( { src, loaded, failed } ) {
         
         this.src = src;
         this.pseudo = new Image();

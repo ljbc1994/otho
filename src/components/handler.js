@@ -176,7 +176,7 @@ export default class Handler {
      * Called when an image has been loaded, computes the
      * progress of the watchers as well as firing other
      * callbacks.
-     * @params {Object::Watcher} watcher - The object that listens to the image status.
+     * @param {Object::Watcher} watcher - The object that listens to the image status.
      */
     _imageLoaded( watcher ) {
         
@@ -204,7 +204,7 @@ export default class Handler {
      * @function
      * Called when an image has failed to load, and fires
      * a callback.
-     * @params {Object::Watcher} watcher - The object that listens to the image status.
+     * @param {Object::Watcher} watcher - The object that listens to the image status.
      */
     _imageFailed( watcher ) {
         
@@ -220,7 +220,7 @@ export default class Handler {
      * @function
      * Called when all of the images have been loaded, and fires
      * a callback.
-     * @params {Object::Watcher} watcher - The object that listens to the image status.
+     * @param {Object::Watcher} watcher - The object that listens to the image status.
      */
     _imagesSuccess() {
         
