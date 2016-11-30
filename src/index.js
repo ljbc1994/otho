@@ -9,4 +9,3 @@ export function load( userOptions ) {
     return new Handler( options ).init();
         
 };
-

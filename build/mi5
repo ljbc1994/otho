@@ -1,0 +1,82 @@
+#!/usr/bin/env node
+
+/**
+ * Quick script to watch for changes in a folder (src) and
+ * run a command if changes are made.
+ */
+"use strict";
+
+const path = require( 'path' );
+const colors = require( 'colors' );
+const chokidar = require( 'chokidar' );
+const commandArgs = require( 'command-line-args' );
+const kill = require( 'tree-kill' )
+const exec = require( 'child_process' ).exec;
+
+const options = commandArgs( [
+    { name: 'src', alias: 's', type: String },
+    { name: 'command', alias: 'c', type: String }
+] );
+
+const desiredPath = path.resolve( path.dirname( __filename ), '../', options.src );
+
+const chockOpts = { ignored: /[\/\\]\./,  persistent: true, cwd: desiredPath };
+
+const status = {
+    flash: console.log.bind( null, String.raw
+        `
+        __/\\\\____________/\\\\__/\\\\\\\\\\\___/\\\\\\\\\\\\\\\_         
+         _\/\\\\\\________/\\\\\\_\/////\\\///___\/\\\///////////__        
+          _\/\\\//\\\____/\\\//\\\_____\/\\\______\/\\\_____________       
+           _\/\\\\///\\\/\\\/_\/\\\_____\/\\\______\/\\\\\\\\\\\\_____     
+            _\/\\\__\///\\\/___\/\\\_____\/\\\______\////////////\\\___    
+             _\/\\\____\///_____\/\\\_____\/\\\_________________\//\\\__   
+              _\/\\\_____________\/\\\_____\/\\\______/\\\________\/\\\__  
+               _\/\\\_____________\/\\\__/\\\\\\\\\\\_\//\\\\\\\\\\\\\/___ 
+                _\///______________\///__\///////////__\//////////////_____ v0.0.0.0.1
+        `
+    ),
+    waiting: console.log.bind( null, `Previous command is still executing.`.red ),
+    watching: ( src ) => console.log( `Watching ${ src } for changes...`.green ),
+    changed: ( src, cmd ) => console.log( `${ src } has changed... Running ${ cmd.red }`.black.bgWhite ),
+    finished: ( cmd ) => console.log( `\n Finished running ${ options.command.green }`.black.bgWhite ),
+    cancelled: console.log.bind( null, `Ooops, going to have to cancel the last command!`.yellow )
+}
+
+let watcher = chokidar.watch( '.', chockOpts );
+
+let currentChild = null;
+
+status.flash();
+
+status.watching( desiredPath );
+
+watcher.on( 'change', ( path, stats ) => {
+    
+    // If a command has already run, kill it and its children!
+    if ( currentChild ) {
+        status.cancelled();
+        kill( currentChild.pid );
+    }
+    
+    status.changed( desiredPath, options.command );
+    
+    // Execute the command
+    currentChild = exec( options.command, ( err, data ) => {
+    
+        if ( err ) return;
+        
+        console.log( data );
+        
+        status.finished( options.command );
+        
+        if ( chockOpts.persistent ) {
+        
+            status.watching( desiredPath );
+        
+        }
+        
+    } );
+    
+    
+} );

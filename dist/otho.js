@@ -1,4 +1,145 @@
+/**
+  * otho.js v0.1.0
+  * Created by Louie Colgan (@ljbc1994)
+  * Released under the MIT License.
+  */
 (function(f){if(typeof exports==="object"&&typeof module!=="undefined"){module.exports=f()}else if(typeof define==="function"&&define.amd){define([],f)}else{var g;if(typeof window!=="undefined"){g=window}else if(typeof global!=="undefined"){g=global}else if(typeof self!=="undefined"){g=self}else{g=this}g.Otho = f()}})(function(){var define,module,exports;return (function e(t,n,r){function s(o,u){if(!n[o]){if(!t[o]){var a=typeof require=="function"&&require;if(!u&&a)return a(o,!0);if(i)return i(o,!0);var f=new Error("Cannot find module '"+o+"'");throw f.code="MODULE_NOT_FOUND",f}var l=n[o]={exports:{}};t[o][0].call(l.exports,function(e){var n=t[o][1][e];return s(n?n:e)},l,l.exports,e,t,n,r)}return n[o].exports}var i=typeof require=="function"&&require;for(var o=0;o<r.length;o++)s(r[o]);return s})({1:[function(require,module,exports){
+'use strict';
+
+Object.defineProperty(exports, "__esModule", {
+    value: true
+});
+
+var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
+
+var _promise = require('../utils/promise');
+
+var _promise2 = _interopRequireDefault(_promise);
+
+var _isArray = require('../utils/is-array');
+
+var _isArray2 = _interopRequireDefault(_isArray);
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
+
+/**
+ * @class
+ * Handles loading the image and firing callbacks if the 
+ * image has loaded or has failed. 
+ */
+var DeferredImage = function () {
+    _createClass(DeferredImage, null, [{
+        key: 'wait',
+
+
+        /**
+         * @function
+         * Loops through array / link of image sources and creates
+         * deferred images, firing the callback when all images
+         * have finished loading or have errored out.
+         * @param {String|Array<String>} - An array of image srcs.
+         * @param {Function} - Callback function for when the image has loaded.
+         * @returns {Promise|null} - Promise which resolves when all the images
+         * have been loaded.
+         */
+        value: function wait(src, loaded) {
+
+            if (!(0, _isArray2.default)(src)) {
+
+                src = [src];
+            }
+
+            var noImages = src.length;
+            var images = [];
+            var usePromise = _promise2.default !== undefined;
+
+            var _tempLoaded = function _tempLoaded() {
+
+                noImages--;
+
+                if (noImages === 0 && !usePromise) {
+
+                    loaded();
+                }
+            };
+
+            for (var i = 0; i < src.length; i++) {
+
+                var deferred = new DeferredImage({
+                    src: src[i],
+                    loaded: _tempLoaded.bind(this),
+                    failed: _tempLoaded.bind(this)
+                });
+
+                if (usePromise) {
+
+                    images.push(deferred.$promise);
+                }
+            }
+
+            return usePromise ? _promise2.default.type.all(images) : null;
+        }
+
+        /**
+         * @function
+         * Initialising the configuration for the deferred image.
+         * @param {Object} - The image src as well as callback methods.
+         */
+
+    }]);
+
+    function DeferredImage(_ref) {
+        var src = _ref.src,
+            loaded = _ref.loaded,
+            failed = _ref.failed;
+
+        _classCallCheck(this, DeferredImage);
+
+        this.src = src;
+        this.pseudo = new Image();
+        this._loaded = loaded || function () {};
+        this._failed = failed || function () {};
+
+        this.init();
+    }
+
+    /**
+     * @function
+     * Load the image and fire when the image has loaded or
+     * returned an error.
+     */
+
+
+    _createClass(DeferredImage, [{
+        key: 'init',
+        value: function init() {
+
+            var self = this;
+
+            self.pseudo.src = this.src;
+
+            self.pseudo.addEventListener('load', this._loaded);
+            self.pseudo.addEventListener('error', this._failed);
+
+            if (_promise2.default !== undefined) {
+
+                this.$promise = _promise2.default.instance(function (resolve, reject) {
+
+                    self.pseudo.addEventListener('load', resolve);
+                    self.pseudo.addEventListener('error', reject);
+                });
+            }
+        }
+    }]);
+
+    return DeferredImage;
+}();
+
+exports.default = DeferredImage;
+
+},{"../utils/is-array":9,"../utils/promise":13}],2:[function(require,module,exports){
 'use strict';
 
 Object.defineProperty(exports, "__esModule", {
@@ -10,6 +151,14 @@ var _createClass = function () { function defineProperties(target, props) { for 
 var _watcher = require('./watcher');
 
 var _watcher2 = _interopRequireDefault(_watcher);
+
+var _deferredImage = require('./deferred-image');
+
+var _deferredImage2 = _interopRequireDefault(_deferredImage);
+
+var _promise = require('../utils/promise');
+
+var _promise2 = _interopRequireDefault(_promise);
 
 var _isArray = require('../utils/is-array');
 
@@ -47,6 +196,8 @@ var Handler = function () {
             forcePlacehold = _ref.forcePlacehold,
             imageLoaded = _ref.imageLoaded,
             imageLoading = _ref.imageLoading,
+            inView = _ref.inView,
+            background = _ref.background,
             success = _ref.success,
             fail = _ref.fail,
             progress = _ref.progress,
@@ -54,12 +205,14 @@ var Handler = function () {
 
         _classCallCheck(this, Handler);
 
-        this.els = this.getElements(els);
+        this.els = this._getElements(els);
 
         // Image src for placehold or if error occurs.
         this.error = error;
         this.placehold = placehold;
 
+        this.inView = inView;
+        this.background = background;
         this.forcePlacehold = forcePlacehold;
 
         // Classes to add to the image / holder.
@@ -84,8 +237,8 @@ var Handler = function () {
 
 
     _createClass(Handler, [{
-        key: 'getElements',
-        value: function getElements(els) {
+        key: '_getElements',
+        value: function _getElements(els) {
 
             if ((0, _isArray2.default)(els)) {
 
@@ -104,15 +257,45 @@ var Handler = function () {
 
         /**
          * @function
-         * Initialises the watchers with default configuration,
+         * Create the watchers with default configuration,
          * note this can be overidden by "data-o" attributes on
          * the watcher's element.
-         * @returns {Object::Handler} Handler - Instance of the handler 
+         * @returns {Promise|Array<Object>} 
          */
 
     }, {
         key: 'init',
         value: function init() {
+
+            this._attachWatchers();
+
+            /**
+             * Ensure that the placehold and error images
+             * are loaded before loading the other images.
+             */
+            if (this.forcePlacehold && (this.placehold || this.error)) {
+
+                var finished = _deferredImage2.default.wait([this.error, this.placehold], this._initWatchers.bind(this));
+
+                if (_promise2.default !== undefined) {
+
+                    return finished.then(this._initWatchers.bind(this));
+                }
+            }
+
+            return this._initWatchers();
+        }
+
+        /**
+         * @function
+         * Create the watchers with settings, note this 
+         * can be overidden by "data-o" attributes on
+         * the watcher's element.
+         */
+
+    }, {
+        key: '_attachWatchers',
+        value: function _attachWatchers() {
 
             var self = this;
 
@@ -124,6 +307,7 @@ var Handler = function () {
                     placehold: self.placehold,
                     imageLoaded: self.imageLoaded,
                     imageLoading: self.imageLoading,
+                    background: self.background,
                     loaded: self._imageLoaded.bind(self),
                     failed: self._imageFailed.bind(self),
                     success: self._imagesSuccess.bind(self)
@@ -131,8 +315,32 @@ var Handler = function () {
 
                 self.watchers.push(watcher);
             }
+        }
 
-            return self;
+        /**
+         * @function 
+         * Initialise the watchers to show the placeholder and
+         * load the images. 
+         * @returns {Promise|Array<Object>} A promise that waits for the watcher
+         * instances to resolve or an array of watchers,
+         */
+
+    }, {
+        key: '_initWatchers',
+        value: function _initWatchers() {
+            var _this = this;
+
+            var watcherInstances = this.watchers.map(function (watcher) {
+
+                return _this.inView ? watcher.watchView() : watcher.init();
+            });
+
+            if (_promise2.default !== undefined) {
+
+                return _promise2.default.type.all(watcherInstances);
+            }
+
+            return watcherInstances;
         }
 
         /**
@@ -181,6 +389,8 @@ var Handler = function () {
             var self = this;
 
             self.fail(watcher);
+
+            self._watchUpdates();
         }
 
         /**
@@ -197,6 +407,40 @@ var Handler = function () {
             var self = this;
 
             self.success(self.watchers);
+
+            self._watchUpdates();
+        }
+    }, {
+        key: '_watchUpdates',
+        value: function _watchUpdates() {
+
+            var self = this;
+
+            window.addEventListener('resize', function () {
+
+                self.watchers.filter(function (watcher) {
+                    return watcher.hasBackground && watcher.hasChanged();
+                }).forEach(function (watcher) {
+                    return watcher.updateBackground();
+                });
+            });
+        }
+
+        /**
+         * @function
+         * Manually trigger updating images whose source that has changed, intended
+         * for use if the website has altered the src of an image.
+         */
+
+    }, {
+        key: 'update',
+        value: function update() {
+
+            this.watchers.filter(function (watcher) {
+                return watcher.toLoad !== watcher.img.src && !watcher.hasBackground;
+            }).forEach(function (watcher) {
+                return watcher.init();
+            });
         }
     }]);
 
@@ -205,7 +449,7 @@ var Handler = function () {
 
 exports.default = Handler;
 
-},{"../utils/is-array":6,"../utils/is-function":7,"../utils/is-node-list":8,"./watcher":2}],2:[function(require,module,exports){
+},{"../utils/is-array":9,"../utils/is-function":10,"../utils/is-node-list":12,"../utils/promise":13,"./deferred-image":1,"./watcher":3}],3:[function(require,module,exports){
 'use strict';
 
 Object.defineProperty(exports, "__esModule", {
@@ -214,7 +458,27 @@ Object.defineProperty(exports, "__esModule", {
 
 var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
 
+var _promise = require('../utils/promise');
+
+var _promise2 = _interopRequireDefault(_promise);
+
+var _isImage = require('../utils/is-image');
+
+var _isImage2 = _interopRequireDefault(_isImage);
+
+var _inView = require('../utils/in-view');
+
+var _inView2 = _interopRequireDefault(_inView);
+
+var _domTraversal = require('../utils/dom-traversal');
+
 var _styleManipulation = require('../utils/style-manipulation');
+
+var _deferredImage = require('./deferred-image');
+
+var _deferredImage2 = _interopRequireDefault(_deferredImage);
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
 function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
 
@@ -238,23 +502,20 @@ var Watcher = function () {
             loaded = _ref.loaded,
             failed = _ref.failed,
             imageLoaded = _ref.imageLoaded,
-            imageLoading = _ref.imageLoading;
+            imageLoading = _ref.imageLoading,
+            background = _ref.background;
 
         _classCallCheck(this, Watcher);
 
         this.el = el;
-
         this.error = this.el.getAttribute('data-o-error') || error;
+        this.background = this.el.getAttribute('data-o-background') || background;
         this.placehold = this.el.getAttribute('data-o-placehold') || placehold;
         this.imageLoaded = this.el.getAttribute('data-o-loaded') || imageLoaded;
         this.imageLoading = this.el.getAttribute('data-o-loading') || imageLoading;
 
         this.loaded = loaded;
         this.failed = failed;
-
-        this.toLoad = this.el.src;
-        this.hasLoaded = false;
-        this.init();
     }
 
     /**
@@ -267,16 +528,145 @@ var Watcher = function () {
 
     _createClass(Watcher, [{
         key: 'init',
-        value: function init() {
+        value: function init(reinit) {
+
+            if (!reinit) this._setup();
 
             (0, _styleManipulation.addClass)(this.el, this.imageLoading);
 
-            this.el.src = this.placehold;
+            this.pseudo = new _deferredImage2.default({
+                src: this.toLoad,
+                loaded: this._loaded.bind(this),
+                failed: this._error.bind(this)
+            });
 
-            this.pseudo = new Image();
-            this.pseudo.onload = this._loaded.bind(this);
-            this.pseudo.onerror = this._error.bind(this);
-            this.pseudo.src = this.toLoad;
+            if (_promise2.default !== undefined) {
+
+                return this.pseudo.$promise;
+            }
+
+            return this;
+        }
+    }, {
+        key: '_setup',
+        value: function _setup() {
+
+            this.pseudo = {};
+            this.inView = false;
+            this.hasLoaded = false;
+            this.hasBackground = false;
+
+            this._getElement(this.el);
+            this.toLoad = this._getImage();
+            this._setImage(this.placehold);
+
+            (0, _styleManipulation.removeClass)(this.el, this.imageLoaded, this.imageLoading);
+        }
+
+        /**
+         * @function
+         * Check whether the element is visible within the view,
+         * also, reevaluate whether the element is visible when
+         * window is scrolled or resized.
+         * @returns {Object|Promise} - The watcher or a promise.
+         */
+
+    }, {
+        key: 'watchView',
+        value: function watchView() {
+
+            this._setup();
+
+            window.addEventListener('scroll', this._onViewChange.bind(this));
+            window.addEventListener('resize', this._onViewChange.bind(this));
+
+            return this._onViewChange();
+        }
+
+        /**
+         * @function
+         * Check whether the image loaded has changed
+         */
+
+    }, {
+        key: 'hasChanged',
+        value: function hasChanged() {
+
+            return this.toLoad !== (0, _styleManipulation.getBackgroundImage)(this.img);
+        }
+
+        /**
+         * @function
+         * Check whether the element is visible within the view,
+         * and if so, initialise the watcher.
+         * @returns {Object|Promise} - The watcher or a promise.
+         */
+
+    }, {
+        key: '_onViewChange',
+        value: function _onViewChange() {
+
+            if (!(0, _inView2.default)(this.el) || this.inView) {
+
+                return;
+            }
+
+            // No need for listeners when image has loaded.
+            window.removeEventListener('scroll', this._onViewChange.bind(this));
+            window.removeEventListener('resize', this._onViewChange.bind(this));
+
+            this.init(true);
+
+            this.inView = true;
+        }
+
+        /**
+         * @function
+         * Determine whether the element contains an image or is just the
+         * image itself and set the element's image to either the element
+         * or the first child image.
+         * @params {Object} el - The element
+         */
+
+    }, {
+        key: '_getElement',
+        value: function _getElement(el) {
+
+            this.img = (0, _isImage2.default)(el) || this.background ? el : (0, _domTraversal.findClosestImage)(el);
+        }
+
+        /**
+         * @function
+         * Set the image src of the element's image based on whether
+         * it's a background image or an image element.
+         * @params {String} src - The image src
+         */
+
+    }, {
+        key: '_setImage',
+        value: function _setImage(src) {
+
+            if (this.background) {
+
+                (0, _styleManipulation.setBackgroundImage)(this.img, src);
+            } else {
+
+                this.img.src = src;
+            }
+        }
+
+        /**
+         * @function
+         * Get the image src of the element's image based on whether
+         * it's a background image or an image element.
+         * @returns {String} - The image src
+         */
+
+    }, {
+        key: '_getImage',
+        value: function _getImage() {
+
+            return this.background ? (0, _styleManipulation.getBackgroundImage)(this.img) : this.img.src;
         }
 
         /**
@@ -293,7 +683,7 @@ var Watcher = function () {
             (0, _styleManipulation.removeClass)(this.el, this.imageLoading);
             (0, _styleManipulation.addClass)(this.el, this.imageLoaded);
 
-            this.el.src = this.pseudo.src;
+            this._setImage(this.toLoad);
 
             this.hasLoaded = true;
 
@@ -313,7 +703,9 @@ var Watcher = function () {
 
             (0, _styleManipulation.removeClass)(this.el, this.imageLoading);
 
-            this.el.src = this.error;
+            this._setImage(this.error);
+
+            this.hasLoaded = true;
 
             this.failed(this);
         }
@@ -324,7 +716,7 @@ var Watcher = function () {
 
 exports.default = Watcher;
 
-},{"../utils/style-manipulation":9}],3:[function(require,module,exports){
+},{"../utils/dom-traversal":6,"../utils/in-view":8,"../utils/is-image":11,"../utils/promise":13,"../utils/style-manipulation":14,"./deferred-image":1}],4:[function(require,module,exports){
 'use strict';
 
 Object.defineProperty(exports, "__esModule", {
@@ -339,11 +731,13 @@ exports.default = {
     error: '',
     placehold: '',
     forcePlacehold: false,
+    inView: false,
+    background: false,
     imageLoaded: 'o-image-loaded',
     imageLoading: 'o-image-loading'
 };
 
-},{}],4:[function(require,module,exports){
+},{}],5:[function(require,module,exports){
 'use strict';
 
 Object.defineProperty(exports, "__esModule", {
@@ -372,7 +766,62 @@ function load(userOptions) {
     return new _handler2.default(options).init();
 };
 
-},{"./components/handler":1,"./config/options":3,"./utils/extend":5}],5:[function(require,module,exports){
+},{"./components/handler":2,"./config/options":4,"./utils/extend":7}],6:[function(require,module,exports){
+'use strict';
+
+Object.defineProperty(exports, "__esModule", {
+    value: true
+});
+exports.findClosestImage = exports.findChildrenImages = undefined;
+
+var _isImage = require('./is-image');
+
+var _isImage2 = _interopRequireDefault(_isImage);
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+/**
+ * @function
+ * Find all descendent images of the element
+ * @param el - The element to check.
+ * @returns {Array} - An array of descendent images
+ */
+function findChildrenImages(el) {
+
+    var _images = [];
+
+    (function _find(el) {
+
+        if ((0, _isImage2.default)(el)) {
+
+            return _images.push(el);
+        }
+
+        return Array.prototype.slice.apply(el.childNodes).forEach(_find);
+    })(el);
+
+    return _images;
+}
+
+/**
+ * @function
+ * Find all descendent images of the element and 
+ * return the first image found.
+ * @param el - The element to check.
+ * @returns {Object|null} - The image or, if none 
+ * found, null.
+ */
+function findClosestImage(el) {
+
+    var _images = findChildrenImages(el);
+
+    return _images.length ? _images[0] : null;
+}
+
+exports.findChildrenImages = findChildrenImages;
+exports.findClosestImage = findClosestImage;
+
+},{"./is-image":11}],7:[function(require,module,exports){
 'use strict';
 
 Object.defineProperty(exports, "__esModule", {
@@ -420,7 +869,28 @@ function extend() {
     }return extended;
 }
 
-},{}],6:[function(require,module,exports){
+},{}],8:[function(require,module,exports){
+"use strict";
+
+Object.defineProperty(exports, "__esModule", {
+    value: true
+});
+exports.default = inView;
+/**
+ * @function
+ * Determines whether the supplied element is visible in the view.
+ * @param el - The element to check.
+ * @returns {Boolean} - Whether the element is in the view.
+ */
+function inView(el) {
+
+    var rect = el.getBoundingClientRect();
+    var doc = document.documentElement;
+
+    return rect.top >= 0 && rect.left >= 0 && rect.bottom <= (window.innerHeight || doc.clientHeight) && rect.right <= (window.innerWidth || doc.clientWidth);
+}
+
+},{}],9:[function(require,module,exports){
 'use strict';
 
 Object.defineProperty(exports, "__esModule", {
@@ -434,10 +904,11 @@ exports.default = isArray;
  * @returns {Boolean} - Whether the element is an array
  */
 function isArray(el) {
+
   return Object.prototype.toString.call(el) === '[object Array]';
 }
 
-},{}],7:[function(require,module,exports){
+},{}],10:[function(require,module,exports){
 "use strict";
 
 Object.defineProperty(exports, "__esModule", {
@@ -451,10 +922,29 @@ exports.default = isFunction;
  * @returns {Boolean} - Whether the element is an array
  */
 function isFunction(el) {
+
   return !!(el && el.constructor && el.call && el.apply);
 }
 
-},{}],8:[function(require,module,exports){
+},{}],11:[function(require,module,exports){
+'use strict';
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.default = isImage;
+/**
+ * @function
+ * Determines whether the supplied element is an image.
+ * @param el - The element to check.
+ * @returns {Boolean} - Whether the element is an image
+ */
+function isImage(el) {
+
+  return el.nodeName.toLowerCase() === 'img';
+}
+
+},{}],12:[function(require,module,exports){
 'use strict';
 
 Object.defineProperty(exports, "__esModule", {
@@ -478,7 +968,69 @@ function isNodeList(nodes) {
     return (typeof nodes === 'undefined' ? 'undefined' : _typeof(nodes)) === 'object' && /^\[object (HTMLCollection|NodeList|Object)\]$/.test(stringRepr) && typeof nodes.length === 'number' && (nodes.length === 0 || _typeof(nodes[0]) === "object" && nodes[0].nodeType > 0);
 }
 
-},{}],9:[function(require,module,exports){
+},{}],13:[function(require,module,exports){
+"use strict";
+
+Object.defineProperty(exports, "__esModule", {
+    value: true
+});
+/**
+ * @function
+ * Checks whether the browser supports native promises.
+ * @returns {Boolean} - Whether the browser supports native promises.
+ */
+function hasNativeSupport() {
+    return typeof Promise !== "undefined" && Promise.toString().indexOf("[native code]") !== -1;
+}
+
+/**
+ * @Object
+ * Checks whether variants of promises are supported and returns
+ * that promise with an instance if it's native as well as the
+ * promise object.
+ * Supports:
+ *  - Native implementations and the Bluebird library
+ *  - jQuery / Zepto implementations
+ *  - Kris Kowal's Q implementation
+ * Notes: Check whether the promise is an A+ implementation.
+ * @returns {Object} - An instance of the promise as well as
+ * the promise object.
+ */
+
+exports.default = function getSupportedPromise() {
+
+    var _Promise = void 0,
+        lib = void 0;
+
+    if (hasNativeSupport()) {
+
+        _Promise = Promise;
+    } else if ((lib = window.jQuery || window.Zepto) && lib.promise !== null) {
+
+        _Promise = lib.promise;
+    } else if (window.Q !== null) {
+
+        _Promise = window.Q;
+    }
+
+    if (_Promise !== null) {
+
+        return {
+
+            instance: function instance(fn) {
+                return hasNativeSupport() ? new _Promise(fn) : _Promise(fn);
+            },
+
+            type: _Promise
+
+        };
+    } else {
+
+        return undefined;
+    }
+}();
+
+},{}],14:[function(require,module,exports){
 'use strict';
 
 Object.defineProperty(exports, "__esModule", {
@@ -486,6 +1038,8 @@ Object.defineProperty(exports, "__esModule", {
 });
 exports.addClass = addClass;
 exports.removeClass = removeClass;
+exports.getBackgroundImage = getBackgroundImage;
+exports.setBackgroundImage = setBackgroundImage;
 /**
  * @function
  * Add class(es) to an element.
@@ -525,5 +1079,31 @@ function removeClass(el /*, classes to remove */) {
     }).join(' ').trim();
 }
 
-},{}]},{},[4])(4)
+/**
+ * @function
+ * Get the background image of the element
+ * @param el - The element to get the background image from.
+ * @param style - The property of the element to retrieve.
+ */
+function getBackgroundImage(el) {
+
+    var background = window.getComputedStyle(el, null).getPropertyValue('background');
+    var urlIndex = background.indexOf('url(') + 4;
+    var endIndex = background.slice(urlIndex).indexOf(')');
+
+    return background.slice(urlIndex).slice(0, endIndex).replace(/["|']/g, "");
+}
+
+/**
+ * @function
+ * Set the background image of the element
+ * @param el - The element to get the background image from.
+ * @param style - The property of the element to retrieve.
+ */
+function setBackgroundImage(el, src) {
+
+    el.style.backgroundImage = 'url(' + src + ')';
+}
+
+},{}]},{},[5])(5)
 });

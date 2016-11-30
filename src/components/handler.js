@@ -1,4 +1,6 @@
 import Watcher from './watcher';
+import DeferredImage from './deferred-image';
+import OthoPromise from '../utils/promise';
 import isArray from '../utils/is-array';
 import isFunction from '../utils/is-function';
 import isNodeList from '../utils/is-node-list';
@@ -23,19 +25,22 @@ export default class Handler {
         forcePlacehold,
         imageLoaded,
         imageLoading,
-        
+        inView,
+        background,
         success,
         fail,
         progress,
         loaded
     } ) {
         
-        this.els = this.getElements( els ); 
+        this.els = this._getElements( els ); 
         
         // Image src for placehold or if error occurs.
         this.error = error;
         this.placehold = placehold;
         
+        this.inView = inView;
+        this.background = background;
         this.forcePlacehold = forcePlacehold;
         
         // Classes to add to the image / holder.
@@ -58,7 +63,7 @@ export default class Handler {
      * @param {Array|Function|Object} els - Elements that are either holders or elements.
      * @returns {Array} - An array of images / holders.
      */
-    getElements( els ) {
+    _getElements( els ) {
         
         if ( isArray( els ) ) {
             
@@ -82,12 +87,42 @@ export default class Handler {
     
     /**
      * @function
-     * Initialises the watchers with default configuration,
+     * Create the watchers with default configuration,
      * note this can be overidden by "data-o" attributes on
      * the watcher's element.
-     * @returns {Object::Handler} Handler - Instance of the handler 
+     * @returns {Promise|Array<Object>} 
      */
     init() {
+        
+        this._attachWatchers();
+                
+        /**
+         * Ensure that the placehold and error images
+         * are loaded before loading the other images.
+         */
+        if ( this.forcePlacehold && ( this.placehold || this.error ) ) {
+            
+            let finished = DeferredImage.wait( [ this.error, this.placehold ], this._initWatchers.bind( this ) );
+            
+            if ( OthoPromise !== undefined ) {
+                
+                return finished.then( this._initWatchers.bind( this ) );
+                
+            }
+            
+        }
+        
+        return this._initWatchers();
+        
+    }
+    
+    /**
+     * @function
+     * Create the watchers with settings, note this 
+     * can be overidden by "data-o" attributes on
+     * the watcher's element.
+     */
+    _attachWatchers() {
         
         let self = this;
         
@@ -99,6 +134,7 @@ export default class Handler {
                 placehold: self.placehold,
                 imageLoaded: self.imageLoaded,
                 imageLoading: self.imageLoading,
+                background: self.background,
                 loaded: self._imageLoaded.bind( self ),
                 failed: self._imageFailed.bind( self ),
                 success: self._imagesSuccess.bind( self )
@@ -108,7 +144,30 @@ export default class Handler {
            
         }
         
-        return self;
+    }
+    
+    /**
+     * @function 
+     * Initialise the watchers to show the placeholder and
+     * load the images. 
+     * @returns {Promise|Array<Object>} A promise that waits for the watcher
+     * instances to resolve or an array of watchers,
+     */
+    _initWatchers() {
+        
+        let watcherInstances = this.watchers.map( ( watcher ) => {
+            
+            return this.inView ? watcher.watchView() : watcher.init();
+            
+        } );
+            
+        if ( OthoPromise !== undefined ) {
+            
+            return OthoPromise.type.all( watcherInstances );
+            
+        }
+        
+        return watcherInstances;
         
     }
     
@@ -153,6 +212,8 @@ export default class Handler {
         
         self.fail ( watcher );
         
+        self._watchUpdates();
+        
     }
     
     /**
@@ -166,6 +227,35 @@ export default class Handler {
         let self = this;
         
         self.success( self.watchers );
+        
+        self._watchUpdates();
+        
+    }
+    
+    _watchUpdates() {
+        
+        let self = this;
+        
+        window.addEventListener( 'resize', function() {
+            
+            self.watchers
+                .filter( ( watcher ) => watcher.hasBackground && watcher.hasChanged() )
+                .forEach( ( watcher ) => watcher.updateBackground() );
+            
+        } );
+        
+    }
+    
+    /**
+     * @function
+     * Manually trigger updating images whose source that has changed, intended
+     * for use if the website has altered the src of an image.
+     */
+    update() {
+        
+        this.watchers
+            .filter( ( watcher ) => watcher.toLoad !== watcher.img.src && !watcher.hasBackground )
+            .forEach( ( watcher ) => watcher.init() );
         
     }
     

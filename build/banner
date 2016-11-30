@@ -1,0 +1,61 @@
+#!/usr/bin/env node
+
+/**
+ * Quick script to add a banner to the dist scripts
+ */
+"use strict";
+
+const fs = require( 'fs' );
+const colors = require( 'colors' );
+const pkg = require( '../package.json' );
+
+/**
+ * Banner comment
+ */
+const head = 
+`/**
+  * ${ pkg.name }.js v${ pkg.version }
+  * Created by ${ pkg.author } (@ljbc1994)
+  * Released under the ${ pkg.license } License.
+  */
+`;
+
+/**
+ * Project urls
+ */
+const project = [
+    `./dist/${ pkg.name }.js`,
+    `./dist/${ pkg.name }.min.js`
+];
+
+/**
+ * @function 
+ * Adds a banner comment to the packaged library
+ */
+function addBanner() {
+    
+    project.forEach( ( file ) => {
+        
+        fs.readFile( file, ( err, fileBuffer ) => {
+    
+            if ( err ) throw err;
+
+            const headBuffer = new Buffer( head );
+            const totalLength = headBuffer.length + fileBuffer.length;
+            const finalBuffer = Buffer.concat( [ headBuffer, fileBuffer ], totalLength );
+            
+            fs.writeFile( file, finalBuffer, ( err, fd ) => {
+
+                if ( err ) throw err;
+                
+                console.log( `\n Successfully added banner to ${ file }.` );
+
+            } );
+    
+        } );
+        
+    } );
+        
+}
+
+addBanner();

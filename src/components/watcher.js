@@ -1,4 +1,9 @@
-import { removeClass, addClass } from '../utils/style-manipulation';
+import OthoPromise from '../utils/promise';
+import isImage from '../utils/is-image';
+import inView from '../utils/in-view';
+import { findClosestImage } from '../utils/dom-traversal';
+import { removeClass, addClass, getBackgroundImage, setBackgroundImage } from '../utils/style-manipulation';
+import DeferredImage from './deferred-image';
 
 /**
  * @class
@@ -20,23 +25,20 @@ export default class Watcher {
         loaded,
         failed,
         imageLoaded,
-        imageLoading
+        imageLoading,
+        background
     } ) {
         
         this.el = el;
-        
         this.error = this.el.getAttribute( 'data-o-error' ) || error;
+        this.background = this.el.getAttribute('data-o-background') || background;
         this.placehold = this.el.getAttribute( 'data-o-placehold' ) || placehold;
         this.imageLoaded = this.el.getAttribute( 'data-o-loaded' ) || imageLoaded;
         this.imageLoading = this.el.getAttribute( 'data-o-loading' ) || imageLoading;
         
         this.loaded = loaded;
         this.failed = failed;
-        
-        this.toLoad = this.el.src;
-        this.hasLoaded = false;
-        this.init();
-        
+
     }
     
     /**
@@ -45,16 +47,137 @@ export default class Watcher {
      * src for the specified placeholder src and defer loading of 
      * the image to an Image object.  
      */
-    init() {
+    init( reinit ) {
+        
+        if ( !reinit ) this._setup();
         
         addClass( this.el, this.imageLoading );
         
-        this.el.src = this.placehold;
+        this.pseudo = new DeferredImage( {
+            src: this.toLoad,
+            loaded: this._loaded.bind( this ),
+            failed: this._error.bind( this )
+        } );
         
-        this.pseudo = new Image();
-        this.pseudo.onload = this._loaded.bind( this );
-        this.pseudo.onerror = this._error.bind( this );
-        this.pseudo.src = this.toLoad;
+        if ( OthoPromise !== undefined ) {
+            
+            return this.pseudo.$promise;
+            
+        }
+        
+        return this;
+        
+    }
+    
+    _setup() {
+        
+        this.pseudo = {};
+        this.inView = false;
+        this.hasLoaded = false;
+        this.hasBackground = false;
+        
+        this._getElement( this.el );
+        this.toLoad = this._getImage();
+        this._setImage( this.placehold );
+        
+        removeClass( this.el, this.imageLoaded, this.imageLoading );
+        
+    }
+    
+    /**
+     * @function
+     * Check whether the element is visible within the view,
+     * also, reevaluate whether the element is visible when
+     * window is scrolled or resized.
+     * @returns {Object|Promise} - The watcher or a promise.
+     */
+    watchView() {
+        
+        this._setup();
+        
+        window.addEventListener( 'scroll', this._onViewChange.bind( this ) );
+        window.addEventListener( 'resize', this._onViewChange.bind( this ) );
+        
+        return this._onViewChange();
+        
+    }
+    
+    /**
+     * @function
+     * Check whether the image loaded has changed
+     */
+    hasChanged() {
+        
+        return this.toLoad !== getBackgroundImage( this.img );
+        
+    }
+    
+    /**
+     * @function
+     * Check whether the element is visible within the view,
+     * and if so, initialise the watcher.
+     * @returns {Object|Promise} - The watcher or a promise.
+     */
+    _onViewChange() {
+        
+        if ( !inView( this.el ) || this.inView ) {
+            
+            return;
+            
+        }
+        
+        // No need for listeners when image has loaded.
+        window.removeEventListener( 'scroll', this._onViewChange.bind( this ) );
+        window.removeEventListener( 'resize', this._onViewChange.bind( this ) );
+        
+        this.init( true );
+        
+        this.inView = true;
+        
+    }
+    
+    /**
+     * @function
+     * Determine whether the element contains an image or is just the
+     * image itself and set the element's image to either the element
+     * or the first child image.
+     * @params {Object} el - The element
+     */
+    _getElement( el ) {
+        
+        this.img = ( isImage( el ) || this.background ) ? el : findClosestImage( el );
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                    
+    }
+    
+    /**
+     * @function
+     * Set the image src of the element's image based on whether
+     * it's a background image or an image element.
+     * @params {String} src - The image src
+     */
+    _setImage( src ) {
+        
+        if ( this.background ) {
+            
+            setBackgroundImage( this.img, src );
+            
+        } else {
+            
+            this.img.src = src; 
+            
+        }
+        
+    }
+
+    /**
+     * @function
+     * Get the image src of the element's image based on whether
+     * it's a background image or an image element.
+     * @returns {String} - The image src
+     */
+    _getImage() {
+        
+        return this.background ? getBackgroundImage( this.img ) : this.img.src;
         
     }
     
@@ -69,7 +192,7 @@ export default class Watcher {
         removeClass( this.el, this.imageLoading );
         addClass( this.el, this.imageLoaded );
         
-        this.el.src = this.pseudo.src;
+        this._setImage( this.toLoad );
         
         this.hasLoaded = true;
         
@@ -87,10 +210,12 @@ export default class Watcher {
         
         removeClass( this.el, this.imageLoading );
         
-        this.el.src = this.error;
+        this._setImage( this.error );
+        
+        this.hasLoaded = true;
         
         this.failed( this );
-        
+            
     }
     
 }
