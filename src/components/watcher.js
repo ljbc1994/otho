@@ -1,4 +1,5 @@
 import OthoPromise from '../utils/promise';
+import isArray from '../utils/is-array';
 import isImage from '../utils/is-image';
 import inView from '../utils/in-view';
 import { findClosestImage } from '../utils/dom-traversal';
@@ -13,6 +14,48 @@ import DeferredImage from './deferred-image';
  */
 export default class Watcher {
     
+    /**
+     * @function
+     * Initialise the array of watchers and when finished,
+     * execute the callback. 
+     * @param {Array|Object} watchers - A watcher or an array of watchers.
+     * @param {Function} loaded - The callback to execute when finished. 
+     */
+    static queue( watchers, loaded ) {
+        
+        if ( !isArray( watchers ) ) {
+            
+            watchers = [ watchers ];
+            
+        }
+        
+        let noWatchers = watchers.length;
+
+        const tempLoaded = () => {
+                      
+            noWatchers--;
+            
+            if ( noWatchers === 0 ) {
+                
+                loaded();
+            
+            }
+                
+        };
+        
+        for ( let i = 0; i < noWatchers; i++ ) {
+            
+            let currentWatcher = watchers[ i ];
+            
+            currentWatcher._any = tempLoaded.bind( this );
+            
+            // Watcher should already be setup before initialisation.
+            currentWatcher.init( true );
+            
+        }
+        
+    }
+
     /**
      * @function
      * Initialising the configuration for the watcher.
@@ -38,7 +81,7 @@ export default class Watcher {
         
         this.loaded = loaded;
         this.failed = failed;
-
+        
     }
     
     /**
@@ -200,6 +243,8 @@ export default class Watcher {
         
         this.loaded( this );
         
+        this._any( this );
+        
     }
     
     /**
@@ -218,6 +263,22 @@ export default class Watcher {
         
         this.failed( this );
             
+        this._any( this );
+        
+    }
+    
+    /**
+     * TODO: Expand upon functionality, currently just for
+     * the ^ static queue function.
+     * @function
+     * Executed whenever an image has been loaded or an 
+     * error has been found.
+     * @returns { Object::Watcher } Return this instance.
+     */
+    _any() {
+        
+        return this;
+        
     }
     
 }

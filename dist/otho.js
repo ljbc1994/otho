@@ -55,7 +55,7 @@ var DeferredImage = function () {
             var images = [];
             var usePromise = _promise2.default !== undefined;
 
-            var _tempLoaded = function _tempLoaded() {
+            var tempLoaded = function tempLoaded() {
 
                 noImages--;
 
@@ -69,8 +69,8 @@ var DeferredImage = function () {
 
                 var deferred = new DeferredImage({
                     src: src[i],
-                    loaded: _tempLoaded.bind(this),
-                    failed: _tempLoaded.bind(this)
+                    loaded: tempLoaded.bind(this),
+                    failed: tempLoaded.bind(this)
                 });
 
                 if (usePromise) {
@@ -196,6 +196,7 @@ var Handler = function () {
             forcePlacehold = _ref.forcePlacehold,
             imageLoaded = _ref.imageLoaded,
             imageLoading = _ref.imageLoading,
+            sync = _ref.sync,
             inView = _ref.inView,
             background = _ref.background,
             success = _ref.success,
@@ -211,6 +212,7 @@ var Handler = function () {
         this.error = error;
         this.placehold = placehold;
 
+        this.sync = sync;
         this.inView = inView;
         this.background = background;
         this.forcePlacehold = forcePlacehold;
@@ -269,18 +271,22 @@ var Handler = function () {
 
             this._attachWatchers();
 
-            /**
-             * Ensure that the placehold and error images
-             * are loaded before loading the other images.
-             */
+            // Ensure that the placehold and error images are loaded before loading the other images.
             if (this.forcePlacehold && (this.placehold || this.error)) {
 
-                var finished = _deferredImage2.default.wait([this.error, this.placehold], this._initWatchers.bind(this));
+                var cb = _promise2.default !== undefined ? function () {} : this._initWatchers.bind(this);
+
+                var finished = _deferredImage2.default.wait([this.error, this.placehold], cb);
 
                 if (_promise2.default !== undefined) {
 
                     return finished.then(this._initWatchers.bind(this));
                 }
+            }
+
+            if (this.sync) {
+
+                return this._syncWatchers();
             }
 
             return this._initWatchers();
@@ -322,7 +328,7 @@ var Handler = function () {
          * Initialise the watchers to show the placeholder and
          * load the images. 
          * @returns {Promise|Array<Object>} A promise that waits for the watcher
-         * instances to resolve or an array of watchers,
+         * instances to resolve or an array of watchers.
          */
 
     }, {
@@ -341,6 +347,30 @@ var Handler = function () {
             }
 
             return watcherInstances;
+        }
+
+        /**
+         * @function 
+         * Initialise the watchers synchronously.
+         */
+
+    }, {
+        key: '_syncWatchers',
+        value: function _syncWatchers() {
+
+            var watchers = Array.prototype.slice.apply(this.watchers);
+
+            this.watchers.map(function (watcher) {
+                return watcher._setup();
+            });
+
+            _watcher2.default.queue(watchers.splice(0, 1), function nextWatcher() {
+
+                if (watchers.length) {
+
+                    _watcher2.default.queue(watchers.splice(0, 1), nextWatcher);
+                }
+            });
         }
 
         /**
@@ -462,6 +492,10 @@ var _promise = require('../utils/promise');
 
 var _promise2 = _interopRequireDefault(_promise);
 
+var _isArray = require('../utils/is-array');
+
+var _isArray2 = _interopRequireDefault(_isArray);
+
 var _isImage = require('../utils/is-image');
 
 var _isImage2 = _interopRequireDefault(_isImage);
@@ -489,12 +523,55 @@ function _classCallCheck(instance, Constructor) { if (!(instance instanceof Cons
  * image's status.
  */
 var Watcher = function () {
+    _createClass(Watcher, null, [{
+        key: 'queue',
 
-    /**
-     * @function
-     * Initialising the configuration for the watcher.
-     * @param {Object} - Defined options.
-     */
+
+        /**
+         * @function
+         * Initialise the array of watchers and when finished,
+         * execute the callback. 
+         * @param {Array|Object} watchers - A watcher or an array of watchers.
+         * @param {Function} loaded - The callback to execute when finished. 
+         */
+        value: function queue(watchers, loaded) {
+
+            if (!(0, _isArray2.default)(watchers)) {
+
+                watchers = [watchers];
+            }
+
+            var noWatchers = watchers.length;
+
+            var tempLoaded = function tempLoaded() {
+
+                noWatchers--;
+
+                if (noWatchers === 0) {
+
+                    loaded();
+                }
+            };
+
+            for (var i = 0; i < noWatchers; i++) {
+
+                var currentWatcher = watchers[i];
+
+                currentWatcher._any = tempLoaded.bind(this);
+
+                // Watcher should already be setup before initialisation.
+                currentWatcher.init(true);
+            }
+        }
+
+        /**
+         * @function
+         * Initialising the configuration for the watcher.
+         * @param {Object} - Defined options.
+         */
+
+    }]);
+
     function Watcher(_ref) {
         var el = _ref.el,
             error = _ref.error,
@@ -690,6 +767,8 @@ var Watcher = function () {
             this.hasLoaded = true;
 
             this.loaded(this);
+
+            this._any(this);
         }
 
         /**
@@ -710,6 +789,24 @@ var Watcher = function () {
             this.hasLoaded = true;
 
             this.failed(this);
+
+            this._any(this);
+        }
+
+        /**
+         * TODO: Expand upon functionality, currently just for
+         * the ^ static queue function.
+         * @function
+         * Executed whenever an image has been loaded or an 
+         * error has been found.
+         * @returns { Object::Watcher } Return this instance.
+         */
+
+    }, {
+        key: '_any',
+        value: function _any() {
+
+            return this;
         }
     }]);
 
@@ -718,7 +815,7 @@ var Watcher = function () {
 
 exports.default = Watcher;
 
-},{"../utils/dom-traversal":6,"../utils/in-view":8,"../utils/is-image":11,"../utils/promise":13,"../utils/style-manipulation":14,"./deferred-image":1}],4:[function(require,module,exports){
+},{"../utils/dom-traversal":6,"../utils/in-view":8,"../utils/is-array":9,"../utils/is-image":11,"../utils/promise":13,"../utils/style-manipulation":14,"./deferred-image":1}],4:[function(require,module,exports){
 'use strict';
 
 Object.defineProperty(exports, "__esModule", {
@@ -730,11 +827,15 @@ Object.defineProperty(exports, "__esModule", {
  */
 exports.default = {
     els: document.getElementsByTagName('img'),
+
     error: '',
     placehold: '',
+
     forcePlacehold: false,
     inView: false,
     background: false,
+    sync: false,
+
     imageLoaded: 'o-image-loaded',
     imageLoading: 'o-image-loading'
 };
@@ -764,7 +865,7 @@ function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { de
 /**
  * @function
  * Load Otho and parse through the user's options.
- * @params {Object} userOptions - The user defined options  
+ * @param {Object} userOptions - The user defined options  
  * @returns {Array<Watcher>|Promise} - List of watchers and a promise containing watchers
  */
 function load(userOptions) {
@@ -772,7 +873,7 @@ function load(userOptions) {
   var options = (0, _extend2.default)(_options2.default, userOptions);
 
   return new _handler2.default(options).init();
-};
+}
 
 },{"./components/handler":2,"./config/options":4,"./utils/extend":7}],6:[function(require,module,exports){
 'use strict';
@@ -863,7 +964,7 @@ function extend() {
 
                 if (deep && Object.prototype.toString.call(obj[prop]) === '[object Object]') {
 
-                    extended[prop] = _helper.extend(true, extended[prop], obj[prop]);
+                    extended[prop] = extend(true, extended[prop], obj[prop]);
                 } else {
 
                     extended[prop] = obj[prop];

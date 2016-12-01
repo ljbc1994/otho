@@ -30,7 +30,7 @@ export default class DeferredImage {
         let images = [];
         let usePromise = OthoPromise !== undefined;
         
-        const _tempLoaded = () => {
+        const tempLoaded = () => {
                       
             noImages--;
             
@@ -46,8 +46,8 @@ export default class DeferredImage {
             
             let deferred = new DeferredImage( {
                 src: src[i],
-                loaded: _tempLoaded.bind( this ),
-                failed: _tempLoaded.bind( this )
+                loaded: tempLoaded.bind( this ),
+                failed: tempLoaded.bind( this )
             } );    
             
             if ( usePromise ) {

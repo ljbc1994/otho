@@ -7,8 +7,8 @@
             img, .el {
                 background: #f2f2f2;
                 display: inline-block;
-                width: 500px;
-                height: 500px;
+                width: 300px;
+                height: 300px;
             }
             
             .o-image-loading {
@@ -17,8 +17,8 @@
             }
             
             .o-image-loaded {
-                animation: BlurMeh 500ms forwards ease-in;
-                -webkit-animation: BlurMeh 500ms forwards ease-in;
+                animation: OpacityIn 500ms forwards ease-in;
+                -webkit-animation: OpacityIn 500ms forwards ease-in;
             }
             
             .example-background {
@@ -49,25 +49,21 @@
                 }
             }
             
-            @keyframes BlurMeh {
+            @keyframes OpacityIn {
                 0% {
-                    filter: blur(10px);
-                    transform: scale(0.8);
+                    opacity: 0.25;
                 }
                 100% {
-                    filter: blur(0px);
-                    transform: scale(1);
+                    opacity: 1;
                 }
             }
             
-            @-webkit-keyframes BlurMeh {
+            @-webkit-keyframes OpacityIn {
                 0% {
-                    filter: blur(10px);
-                    transform: scale(0.8);
+                    opacity: 0.25;
                 }
                 100% {
-                    filter: blur(0px);
-                    transform: scale(1);
+                    opacity: 1;
                 }
             }
             
@@ -97,28 +93,17 @@
             <img data-o-src="http://www.nasa.gov/sites/default/files/thumbnails/image/24609260915_a840b027e5_o.jpg"/>
         </div>
         <div class="el example-background" data-o-background="true"></div>
-        
-        <!-- otho2 -->
-        <img class="el2" data-o-src="https://upload.wikimedia.org/wikipedia/commons/d/d8/Deerfire_high_res_edit.jpg">
-        <img class="el2" data-o-src="https://upload.wikimedia.org/wikipedia/commons/3/3d/Soufriere_Church_high_res.jpg"/>
-        <img class="el2" data-o-src="http://www3.open.ac.uk/events/2009225_50828.jpg"/>
-        
+
         <script src="../../dist/otho.min.js"></script>
-        
         <script>
             
             var otho = Otho.load({
                 els: document.getElementsByClassName('el'),
                 placehold: 'http://placehold.it/200x200',
                 error: 'http://placehold.it/500x500',
-                inView: true
+                sync: true
             });
             
-            var otho2 = Otho.load({
-                els: document.getElementsByClassName('el2'),
-                placehold: 'http://placehold.it/200x200',
-                error: 'http://placehold.it/500x500'
-            });
             
         </script>
             

@@ -25,6 +25,7 @@ export default class Handler {
         forcePlacehold,
         imageLoaded,
         imageLoading,
+        sync,
         inView,
         background,
         success,
@@ -39,6 +40,7 @@ export default class Handler {
         this.error = error;
         this.placehold = placehold;
         
+        this.sync = sync;
         this.inView = inView;
         this.background = background;
         this.forcePlacehold = forcePlacehold;
@@ -96,19 +98,24 @@ export default class Handler {
         
         this._attachWatchers();
                 
-        /**
-         * Ensure that the placehold and error images
-         * are loaded before loading the other images.
-         */
+        // Ensure that the placehold and error images are loaded before loading the other images.
         if ( this.forcePlacehold && ( this.placehold || this.error ) ) {
             
-            let finished = DeferredImage.wait( [ this.error, this.placehold ], this._initWatchers.bind( this ) );
+            let cb = OthoPromise !== undefined ? function() {} : this._initWatchers.bind( this );
+            
+            let finished = DeferredImage.wait( [ this.error, this.placehold ], cb );
             
             if ( OthoPromise !== undefined ) {
                 
                 return finished.then( this._initWatchers.bind( this ) );
                 
             }
+            
+        }
+        
+        if ( this.sync ) {
+            
+            return this._syncWatchers();
             
         }
         
@@ -151,7 +158,7 @@ export default class Handler {
      * Initialise the watchers to show the placeholder and
      * load the images. 
      * @returns {Promise|Array<Object>} A promise that waits for the watcher
-     * instances to resolve or an array of watchers,
+     * instances to resolve or an array of watchers.
      */
     _initWatchers() {
         
@@ -168,6 +175,28 @@ export default class Handler {
         }
         
         return watcherInstances;
+        
+    }
+    
+    /**
+     * @function 
+     * Initialise the watchers synchronously.
+     */
+    _syncWatchers() {
+        
+        let watchers = Array.prototype.slice.apply( this.watchers );
+        
+        this.watchers.map( ( watcher ) => watcher._setup() );
+        
+        Watcher.queue( watchers.splice( 0, 1 ), function nextWatcher() {
+            
+            if ( watchers.length ) {
+                
+                Watcher.queue( watchers.splice( 0, 1 ), nextWatcher );
+                
+            }
+            
+        } );
         
     }
     
