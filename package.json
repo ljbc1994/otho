@@ -4,8 +4,8 @@
   "description": "A tiny javascript library for handling and animating images",
   "main": "dist/otho.js",
   "scripts": {
-    "build:unmin": "browserify src/index.js -s Otho -t babelify -o dist/otho.js",
-    "build:min": "browserify src/index.js -s Otho -t babelify | uglifyjs > dist/otho.min.js",
+    "build:unmin": "browserify src/index.js --debug -s Otho -t babelify | exorcist dist/otho.js.map > dist/otho.js",
+    "build:min": "browserify --debug src/index.js -s Otho -t babelify | uglifyjs > dist/otho.min.js",
     "build": "npm run build:unmin && npm run build:min && node build/banner",
     "lint": "eslint src/**/*",
     "watch": "node build/mi5 -s src -c \"npm run build\"",
@@ -44,6 +44,7 @@
     "command-line-args": "^3.0.3",
     "coveralls": "^2.11.14",
     "eslint": "^3.11.1",
+    "exorcist": "^0.4.0",
     "jsdom": "^9.8.3",
     "jsdom-global": "^2.1.0",
     "mocha": "^3.1.2",

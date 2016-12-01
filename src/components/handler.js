@@ -181,7 +181,6 @@ export default class Handler {
     }
     
     /**
-     * TODO: Use the same watchers array.
      * @function 
      * Initialise the watchers synchronously.
      */
@@ -194,15 +193,15 @@ export default class Handler {
         this.watchers.map( ( watcher ) => watcher._setup() );
         
         Watcher.queue( this.watchers.slice( index.min, index.max ), function nextWatcher() {
-                        
+            
+            index.min = index.min + 1;
+            index.max = index.max + 1;
+            
             if ( index.max <= self.watchers.length ) {
                 
                 Watcher.queue( self.watchers.slice( index.min, index.max ), nextWatcher );
                 
             }
-            
-            index.min = index.min + 1;
-            index.max = index.max + 1;
             
         } );
         
