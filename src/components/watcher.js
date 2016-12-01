@@ -43,7 +43,7 @@ export default class Watcher {
                 
         };
         
-        for ( let i = 0; i < noWatchers; i++ ) {
+        for ( let i = 0; i < watchers.length; i++ ) {
             
             let currentWatcher = watchers[ i ];
             

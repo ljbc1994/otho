@@ -40,7 +40,6 @@ export default class Handler {
         this.error = error;
         this.placehold = placehold;
         
-        this.sync = sync;
         this.inView = inView;
         this.background = background;
         this.forcePlacehold = forcePlacehold;
@@ -50,6 +49,9 @@ export default class Handler {
         this.imageLoading = imageLoading;
         
         this.watchers = [];
+        
+        // Sync
+        this.sync = sync;
         
         // Callback functions.
         this.fail = fail || function() { };
@@ -179,22 +181,28 @@ export default class Handler {
     }
     
     /**
+     * TODO: Use the same watchers array.
      * @function 
      * Initialise the watchers synchronously.
      */
     _syncWatchers() {
         
-        let watchers = Array.prototype.slice.apply( this.watchers );
+        let self = this;
+        
+        let index = { min: 0, max: 1 };
         
         this.watchers.map( ( watcher ) => watcher._setup() );
         
-        Watcher.queue( watchers.splice( 0, 1 ), function nextWatcher() {
-            
-            if ( watchers.length ) {
+        Watcher.queue( this.watchers.slice( index.min, index.max ), function nextWatcher() {
+                        
+            if ( index.max <= self.watchers.length ) {
                 
-                Watcher.queue( watchers.splice( 0, 1 ), nextWatcher );
+                Watcher.queue( self.watchers.slice( index.min, index.max ), nextWatcher );
                 
             }
+            
+            index.min = index.min + 1;
+            index.max = index.max + 1;
             
         } );
         

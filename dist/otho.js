@@ -212,7 +212,6 @@ var Handler = function () {
         this.error = error;
         this.placehold = placehold;
 
-        this.sync = sync;
         this.inView = inView;
         this.background = background;
         this.forcePlacehold = forcePlacehold;
@@ -222,6 +221,9 @@ var Handler = function () {
         this.imageLoading = imageLoading;
 
         this.watchers = [];
+
+        // Sync
+        this.sync = sync;
 
         // Callback functions.
         this.fail = fail || function () {};
@@ -350,6 +352,7 @@ var Handler = function () {
         }
 
         /**
+         * TODO: Use the same watchers array.
          * @function 
          * Initialise the watchers synchronously.
          */
@@ -358,18 +361,23 @@ var Handler = function () {
         key: '_syncWatchers',
         value: function _syncWatchers() {
 
-            var watchers = Array.prototype.slice.apply(this.watchers);
+            var self = this;
+
+            var index = { min: 0, max: 1 };
 
             this.watchers.map(function (watcher) {
                 return watcher._setup();
             });
 
-            _watcher2.default.queue(watchers.splice(0, 1), function nextWatcher() {
+            _watcher2.default.queue(this.watchers.slice(index.min, index.max), function nextWatcher() {
 
-                if (watchers.length) {
+                if (index.max <= self.watchers.length) {
 
-                    _watcher2.default.queue(watchers.splice(0, 1), nextWatcher);
+                    _watcher2.default.queue(self.watchers.slice(index.min, index.max), nextWatcher);
                 }
+
+                index.min = index.min + 1;
+                index.max = index.max + 1;
             });
         }
 
@@ -553,7 +561,7 @@ var Watcher = function () {
                 }
             };
 
-            for (var i = 0; i < noWatchers; i++) {
+            for (var i = 0; i < watchers.length; i++) {
 
                 var currentWatcher = watchers[i];
 
