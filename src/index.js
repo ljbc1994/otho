@@ -1,5 +1,5 @@
+import { defaultOptions } from './config/options';
 import Handler from './components/handler';
-import defaultOptions from './config/options';
 import extend from './utils/extend';
 
 /**

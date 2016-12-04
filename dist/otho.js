@@ -1,3 +1,8 @@
+/**
+  * otho.js v0.1.0
+  * Created by Louie Colgan (@ljbc1994)
+  * Released under the MIT License.
+  */
 (function(f){if(typeof exports==="object"&&typeof module!=="undefined"){module.exports=f()}else if(typeof define==="function"&&define.amd){define([],f)}else{var g;if(typeof window!=="undefined"){g=window}else if(typeof global!=="undefined"){g=global}else if(typeof self!=="undefined"){g=self}else{g=this}g.Otho = f()}})(function(){var define,module,exports;return (function e(t,n,r){function s(o,u){if(!n[o]){if(!t[o]){var a=typeof require=="function"&&require;if(!u&&a)return a(o,!0);if(i)return i(o,!0);var f=new Error("Cannot find module '"+o+"'");throw f.code="MODULE_NOT_FOUND",f}var l=n[o]={exports:{}};t[o][0].call(l.exports,function(e){var n=t[o][1][e];return s(n?n:e)},l,l.exports,e,t,n,r)}return n[o].exports}var i=typeof require=="function"&&require;for(var o=0;o<r.length;o++)s(r[o]);return s})({1:[function(require,module,exports){
 'use strict';
 
@@ -141,6 +146,8 @@ Object.defineProperty(exports, "__esModule", {
     value: true
 });
 
+var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol" ? function (obj) { return typeof obj; } : function (obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; };
+
 var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
 
 var _watcher = require('./watcher');
@@ -155,6 +162,8 @@ var _promise = require('../utils/promise');
 
 var _promise2 = _interopRequireDefault(_promise);
 
+var _options = require('../config/options');
+
 var _isArray = require('../utils/is-array');
 
 var _isArray2 = _interopRequireDefault(_isArray);
@@ -166,6 +175,10 @@ var _isFunction2 = _interopRequireDefault(_isFunction);
 var _isNodeList = require('../utils/is-node-list');
 
 var _isNodeList2 = _interopRequireDefault(_isNodeList);
+
+var _extend = require('../utils/extend');
+
+var _extend2 = _interopRequireDefault(_extend);
 
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
@@ -203,6 +216,8 @@ var Handler = function () {
 
         this.els = this._getElements(els);
 
+        this.watchers = [];
+
         // Image src for placehold or if error occurs.
         this.error = error;
         this.placehold = placehold;
@@ -215,16 +230,16 @@ var Handler = function () {
         this.imageLoaded = imageLoaded;
         this.imageLoading = imageLoading;
 
-        this.watchers = [];
-
-        // Sync
-        this.sync = sync;
-
         // Callback functions.
         this.fail = fail || function () {};
         this.loaded = loaded || function () {};
         this.success = success || function () {};
         this.progress = progress || function () {};
+
+        if ((typeof sync === 'undefined' ? 'undefined' : _typeof(sync)) === 'object') {
+
+            this.sync = (0, _extend2.default)(_options.syncOptions, sync);
+        }
     }
 
     /**
@@ -356,21 +371,22 @@ var Handler = function () {
         value: function _syncWatchers() {
 
             var self = this;
+            var perLoad = self.sync.perLoad;
 
-            var index = { min: 0, max: 1 };
+            var index = 1;
+            var maxIndex = Math.ceil(self.watchers.length / perLoad);
 
-            this.watchers.map(function (watcher) {
+            self.watchers.map(function (watcher) {
                 return watcher._setup();
             });
 
-            _watcher2.default.queue(this.watchers.slice(index.min, index.max), function nextWatcher() {
+            _watcher2.default.queue(self.watchers.slice(0, perLoad), function nextWatcher() {
 
-                index.min = index.min + 1;
-                index.max = index.max + 1;
+                index++;
 
-                if (index.max <= self.watchers.length) {
+                if (index <= maxIndex) {
 
-                    _watcher2.default.queue(self.watchers.slice(index.min, index.max), nextWatcher);
+                    _watcher2.default.queue(self.watchers.slice(perLoad * (index - 1), perLoad * index), nextWatcher);
                 }
             });
         }
@@ -481,7 +497,7 @@ var Handler = function () {
 
 exports.default = Handler;
 
-},{"../utils/is-array":9,"../utils/is-function":10,"../utils/is-node-list":12,"../utils/promise":13,"./deferred-image":1,"./watcher":3}],3:[function(require,module,exports){
+},{"../config/options":4,"../utils/extend":7,"../utils/is-array":9,"../utils/is-function":10,"../utils/is-node-list":12,"../utils/promise":13,"./deferred-image":1,"./watcher":3}],3:[function(require,module,exports){
 'use strict';
 
 Object.defineProperty(exports, "__esModule", {
@@ -827,7 +843,7 @@ Object.defineProperty(exports, "__esModule", {
  * @object
  * Default options for the handler.
  */
-exports.default = {
+var defaultOptions = {
     els: document.getElementsByTagName('img'),
 
     error: '',
@@ -842,6 +858,18 @@ exports.default = {
     imageLoading: 'o-image-loading'
 };
 
+/**
+ * @object
+ * Default options for synchronous image 
+ * loading.
+ */
+var syncOptions = {
+    perLoad: 1
+};
+
+exports.defaultOptions = defaultOptions;
+exports.syncOptions = syncOptions;
+
 },{}],5:[function(require,module,exports){
 'use strict';
 
@@ -850,13 +878,11 @@ Object.defineProperty(exports, "__esModule", {
 });
 exports.load = load;
 
+var _options = require('./config/options');
+
 var _handler = require('./components/handler');
 
 var _handler2 = _interopRequireDefault(_handler);
-
-var _options = require('./config/options');
-
-var _options2 = _interopRequireDefault(_options);
 
 var _extend = require('./utils/extend');
 
@@ -872,7 +898,7 @@ function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { de
  */
 function load(userOptions) {
 
-  var options = (0, _extend2.default)(_options2.default, userOptions);
+  var options = (0, _extend2.default)(_options.defaultOptions, userOptions);
 
   return new _handler2.default(options).init();
 }

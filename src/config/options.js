@@ -2,7 +2,7 @@
  * @object
  * Default options for the handler.
  */
-export default {
+let defaultOptions = {
     els: document.getElementsByTagName('img'),
     
     error: '',
@@ -16,3 +16,14 @@ export default {
     imageLoaded: 'o-image-loaded',
     imageLoading: 'o-image-loading'
 };
+
+/**
+ * @object
+ * Default options for synchronous image 
+ * loading.
+ */
+let syncOptions = {
+    perLoad: 1
+};
+
+export { defaultOptions, syncOptions };

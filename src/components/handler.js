@@ -1,9 +1,12 @@
 import Watcher from './watcher';
 import DeferredImage from './deferred-image';
 import OthoPromise from '../utils/promise';
+
+import { syncOptions } from '../config/options';
 import isArray from '../utils/is-array';
 import isFunction from '../utils/is-function';
 import isNodeList from '../utils/is-node-list';
+import extend from '../utils/extend';
 
 /**
  * @class
@@ -36,6 +39,8 @@ export default class Handler {
         
         this.els = this._getElements( els ); 
         
+        this.watchers = [];
+        
         // Image src for placehold or if error occurs.
         this.error = error;
         this.placehold = placehold;
@@ -48,17 +53,18 @@ export default class Handler {
         this.imageLoaded = imageLoaded;
         this.imageLoading = imageLoading;
         
-        this.watchers = [];
-        
-        // Sync
-        this.sync = sync;
-        
         // Callback functions.
         this.fail = fail || function() { };
         this.loaded = loaded || function() { };
         this.success = success || function() { };
         this.progress = progress || function() { };
-           
+        
+        if ( typeof sync === 'object' ) {
+            
+            this.sync = extend( syncOptions, sync );
+         
+        }
+        
     }
     
     /**
@@ -187,19 +193,19 @@ export default class Handler {
     _syncWatchers() {
         
         let self = this;
+        let { perLoad } = self.sync;
+        let index = 1;
+        let maxIndex = Math.ceil( self.watchers.length / perLoad );
         
-        let index = { min: 0, max: 1 };
+        self.watchers.map( ( watcher ) => watcher._setup() );
         
-        this.watchers.map( ( watcher ) => watcher._setup() );
-        
-        Watcher.queue( this.watchers.slice( index.min, index.max ), function nextWatcher() {
+        Watcher.queue( self.watchers.slice( 0, perLoad ), function nextWatcher() {
             
-            index.min = index.min + 1;
-            index.max = index.max + 1;
+            index++;
             
-            if ( index.max <= self.watchers.length ) {
+            if ( index <= maxIndex ) {
                 
-                Watcher.queue( self.watchers.slice( index.min, index.max ), nextWatcher );
+                Watcher.queue( self.watchers.slice( perLoad * ( index - 1 ), perLoad * index ), nextWatcher );
                 
             }
             
