@@ -23,7 +23,8 @@ let defaultOptions = {
  * loading.
  */
 let syncOptions = {
-    perLoad: 1
+    perLoad: 1,
+    delay: 0
 };
 
 export { defaultOptions, syncOptions };

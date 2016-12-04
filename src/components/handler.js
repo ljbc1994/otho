@@ -203,7 +203,10 @@ export default class Handler {
             
             if ( index <= maxIndex ) {
                  
-                Watcher.queue( self.watchers.slice( perLoad * ( index - 1 ), perLoad * index ), executeQueue );
+                Watcher.queue( 
+                    self.watchers.slice( perLoad * ( index - 1 ), perLoad * index ), 
+                    setTimeout.bind( null, executeQueue, delay ) 
+                );
                 
             }
             

@@ -384,7 +384,7 @@ var Handler = function () {
 
                 if (index <= maxIndex) {
 
-                    _watcher2.default.queue(self.watchers.slice(perLoad * (index - 1), perLoad * index), executeQueue);
+                    _watcher2.default.queue(self.watchers.slice(perLoad * (index - 1), perLoad * index), setTimeout.bind(null, executeQueue, delay));
                 }
             };
 
@@ -868,7 +868,8 @@ var defaultOptions = {
  * loading.
  */
 var syncOptions = {
-    perLoad: 1
+    perLoad: 1,
+    delay: 0
 };
 
 exports.defaultOptions = defaultOptions;

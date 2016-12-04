@@ -5,7 +5,7 @@
   "main": "dist/otho.js",
   "scripts": {
     "build:unmin": "browserify src/index.js --debug -s Otho -t babelify | exorcist dist/otho.js.map > dist/otho.js",
-    "build:min": "browserify --debug src/index.js -s Otho -t babelify | uglifyjs > dist/otho.min.js",
+    "build:min": "browserify src/index.js -s Otho -t babelify | uglifyjs > dist/otho.min.js",
     "build": "npm run build:unmin && npm run build:min && node build/banner",
     "lint": "eslint src/**/*",
     "watch": "node build/mi5 -s src -c \"npm run build\"",
