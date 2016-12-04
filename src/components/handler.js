@@ -193,23 +193,25 @@ export default class Handler {
     _syncWatchers() {
         
         let self = this;
-        let { perLoad } = self.sync;
-        let index = 1;
+        let { delay, perLoad } = self.sync;
+        let index = 0;
         let maxIndex = Math.ceil( self.watchers.length / perLoad );
         
-        self.watchers.map( ( watcher ) => watcher._setup() );
-        
-        Watcher.queue( self.watchers.slice( 0, perLoad ), function nextWatcher() {
+        const executeQueue = () => {
             
             index++;
             
             if ( index <= maxIndex ) {
-                
-                Watcher.queue( self.watchers.slice( perLoad * ( index - 1 ), perLoad * index ), nextWatcher );
+                 
+                Watcher.queue( self.watchers.slice( perLoad * ( index - 1 ), perLoad * index ), executeQueue );
                 
             }
             
-        } );
+        };
+        
+        self.watchers.map( ( watcher ) => watcher._setup() );
+        
+        executeQueue();
         
     }
     

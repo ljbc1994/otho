@@ -371,24 +371,28 @@ var Handler = function () {
         value: function _syncWatchers() {
 
             var self = this;
-            var perLoad = self.sync.perLoad;
+            var _self$sync = self.sync,
+                delay = _self$sync.delay,
+                perLoad = _self$sync.perLoad;
 
-            var index = 1;
+            var index = 0;
             var maxIndex = Math.ceil(self.watchers.length / perLoad);
 
-            self.watchers.map(function (watcher) {
-                return watcher._setup();
-            });
-
-            _watcher2.default.queue(self.watchers.slice(0, perLoad), function nextWatcher() {
+            var executeQueue = function executeQueue() {
 
                 index++;
 
                 if (index <= maxIndex) {
 
-                    _watcher2.default.queue(self.watchers.slice(perLoad * (index - 1), perLoad * index), nextWatcher);
+                    _watcher2.default.queue(self.watchers.slice(perLoad * (index - 1), perLoad * index), executeQueue);
                 }
+            };
+
+            self.watchers.map(function (watcher) {
+                return watcher._setup();
             });
+
+            executeQueue();
         }
 
         /**
