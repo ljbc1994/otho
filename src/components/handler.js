@@ -198,6 +198,12 @@ export default class Handler {
      */
     _initMatrix() {
         
+        if ( isFunction( this.sync.matrix ) ) {
+            
+            this.sync.matrix = this.sync.matrix( this.watchers );
+            
+        }
+        
         if ( this.watchers.length !== this.sync.matrix.length ) {
             
             throw 'The matrix must contain the same number of items as the number of images';
