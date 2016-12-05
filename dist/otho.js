@@ -882,12 +882,17 @@ Object.defineProperty(exports, "__esModule", {
   value: true
 });
 exports.load = load;
+exports.preload = preload;
 
 var _options = require('./config/options');
 
 var _handler = require('./components/handler');
 
 var _handler2 = _interopRequireDefault(_handler);
+
+var _deferredImage = require('./components/deferred-image');
+
+var _deferredImage2 = _interopRequireDefault(_deferredImage);
 
 var _extend = require('./utils/extend');
 
@@ -908,7 +913,19 @@ function load(userOptions) {
   return new _handler2.default(options).init();
 }
 
-},{"./components/handler":2,"./config/options":4,"./utils/extend":7}],6:[function(require,module,exports){
+/**
+ * @function
+ * Preload the specified images.
+ * @param {Object|Array} images - The images to preload  
+ * @param {Function} cb - The callback to execute when all
+ * the specified images are preloaded.
+ */
+function preload(images, cb) {
+
+  return _deferredImage2.default.wait(images, cb);
+}
+
+},{"./components/deferred-image":1,"./components/handler":2,"./config/options":4,"./utils/extend":7}],6:[function(require,module,exports){
 'use strict';
 
 Object.defineProperty(exports, "__esModule", {

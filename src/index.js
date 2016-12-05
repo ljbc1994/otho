@@ -1,5 +1,6 @@
 import { defaultOptions } from './config/options';
 import Handler from './components/handler';
+import DeferredImage from './components/deferred-image';
 import extend from './utils/extend';
 
 /**
@@ -14,4 +15,17 @@ export function load( userOptions ) {
 
     return new Handler( options ).init();
         
+}
+
+/**
+ * @function
+ * Preload the specified images.
+ * @param {Object|Array} images - The images to preload  
+ * @param {Function} cb - The callback to execute when all
+ * the specified images are preloaded.
+ */
+export function preload( images, cb ) {
+    
+    return DeferredImage.wait( images, cb );
+    
 }
