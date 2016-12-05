@@ -232,6 +232,8 @@ export default class Handler {
     /**
      * @function 
      * Initialise the watchers synchronously.
+     * @params {Array} watchers - List of watchers to synchronously load
+     * @returns {void} - Queue image loading execution
      */
     _syncWatchers( watchers ) {
         
@@ -248,7 +250,6 @@ export default class Handler {
                 
                 let start = perLoad * ( index - 1 );
                 let end = perLoad * index;
-                
                 let flattened = flatten( watchers.slice( start, end ) );
                 
                 Watcher.queue( flattened, setTimeout.bind( null, executeQueue, delay ) );
