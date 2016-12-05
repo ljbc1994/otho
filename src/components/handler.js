@@ -192,7 +192,9 @@ export default class Handler {
     
     /**
      * @function 
-     * Initialise the watchers synchronously.
+     * Initialise the watchers matrix, order the synchronous execution
+     * of watchers according to the matrix.
+     * @returns { void } - Execute the watchers synchronously
      */
     _initMatrix() {
         
@@ -206,6 +208,10 @@ export default class Handler {
         let ordered = {};
         let matrix = [];
         
+        /**
+         * Iterate through the matrix and pair
+         * the watcher with its specified position.
+         */
         self.sync.matrix.forEach( ( value, index ) => {
             
             if ( isArray( ordered[ value ] ) ) {
@@ -220,6 +226,11 @@ export default class Handler {
             
         } );
         
+        /**
+         * Sort the keys in ascending order and 
+         * move the ordered object's pairs to
+         * the matrix array.
+         */
         Object
             .keys( ordered )
             .sort( ( a, b ) => a - b )
