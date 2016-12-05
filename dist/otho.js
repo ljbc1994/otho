@@ -139,7 +139,7 @@ var DeferredImage = function () {
 
 exports.default = DeferredImage;
 
-},{"../utils/is-array":9,"../utils/promise":13}],2:[function(require,module,exports){
+},{"../utils/is-array":10,"../utils/promise":14}],2:[function(require,module,exports){
 'use strict';
 
 Object.defineProperty(exports, "__esModule", {
@@ -179,6 +179,10 @@ var _isNodeList2 = _interopRequireDefault(_isNodeList);
 var _extend = require('../utils/extend');
 
 var _extend2 = _interopRequireDefault(_extend);
+
+var _flatten = require('../utils/flatten');
+
+var _flatten2 = _interopRequireDefault(_flatten);
 
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
@@ -283,7 +287,10 @@ var Handler = function () {
 
             this._attachWatchers();
 
-            // Ensure that the placehold and error images are loaded before loading the other images.
+            /**
+             * Ensure that the placehold and error images are 
+             * loaded before loading the other images.
+             */
             if (this.forcePlacehold && (this.placehold || this.error)) {
 
                 var cb = _promise2.default !== undefined ? function () {} : this._initWatchers.bind(this);
@@ -298,7 +305,7 @@ var Handler = function () {
 
             if (this.sync) {
 
-                return this._syncWatchers();
+                return (0, _isArray2.default)(this.sync.matrix) ? this._initMatrix() : this._syncWatchers(this.watchers);
             }
 
             return this._initWatchers();
@@ -367,8 +374,46 @@ var Handler = function () {
          */
 
     }, {
+        key: '_initMatrix',
+        value: function _initMatrix() {
+
+            if (this.watchers.length !== this.sync.matrix.length) {
+
+                throw 'The matrix must contain the same number of items as the number of images';
+            }
+
+            var self = this;
+            var ordered = {};
+            var matrix = [];
+
+            self.sync.matrix.forEach(function (value, index) {
+
+                if ((0, _isArray2.default)(ordered[value])) {
+
+                    ordered[value].push(self.watchers[index]);
+                } else {
+
+                    ordered[value] = [self.watchers[index]];
+                }
+            });
+
+            Object.keys(ordered).sort(function (a, b) {
+                return a - b;
+            }).forEach(function (value, index) {
+                return matrix[index] = ordered[value];
+            });
+
+            return this._syncWatchers(matrix);
+        }
+
+        /**
+         * @function 
+         * Initialise the watchers synchronously.
+         */
+
+    }, {
         key: '_syncWatchers',
-        value: function _syncWatchers() {
+        value: function _syncWatchers(watchers) {
 
             var self = this;
             var _self$sync = self.sync,
@@ -376,7 +421,7 @@ var Handler = function () {
                 perLoad = _self$sync.perLoad;
 
             var index = 0;
-            var maxIndex = Math.ceil(self.watchers.length / perLoad);
+            var maxIndex = Math.ceil(watchers.length / perLoad);
 
             var executeQueue = function executeQueue() {
 
@@ -384,7 +429,12 @@ var Handler = function () {
 
                 if (index <= maxIndex) {
 
-                    _watcher2.default.queue(self.watchers.slice(perLoad * (index - 1), perLoad * index), setTimeout.bind(null, executeQueue, delay));
+                    var start = perLoad * (index - 1);
+                    var end = perLoad * index;
+
+                    var flattened = (0, _flatten2.default)(watchers.slice(start, end));
+
+                    _watcher2.default.queue(flattened, setTimeout.bind(null, executeQueue, delay));
                 }
             };
 
@@ -392,7 +442,7 @@ var Handler = function () {
                 return watcher._setup();
             });
 
-            executeQueue();
+            return executeQueue();
         }
 
         /**
@@ -501,7 +551,7 @@ var Handler = function () {
 
 exports.default = Handler;
 
-},{"../config/options":4,"../utils/extend":7,"../utils/is-array":9,"../utils/is-function":10,"../utils/is-node-list":12,"../utils/promise":13,"./deferred-image":1,"./watcher":3}],3:[function(require,module,exports){
+},{"../config/options":4,"../utils/extend":7,"../utils/flatten":8,"../utils/is-array":10,"../utils/is-function":11,"../utils/is-node-list":13,"../utils/promise":14,"./deferred-image":1,"./watcher":3}],3:[function(require,module,exports){
 'use strict';
 
 Object.defineProperty(exports, "__esModule", {
@@ -837,7 +887,7 @@ var Watcher = function () {
 
 exports.default = Watcher;
 
-},{"../utils/dom-traversal":6,"../utils/in-view":8,"../utils/is-array":9,"../utils/is-image":11,"../utils/promise":13,"../utils/style-manipulation":14,"./deferred-image":1}],4:[function(require,module,exports){
+},{"../utils/dom-traversal":6,"../utils/in-view":9,"../utils/is-array":10,"../utils/is-image":12,"../utils/promise":14,"../utils/style-manipulation":15,"./deferred-image":1}],4:[function(require,module,exports){
 'use strict';
 
 Object.defineProperty(exports, "__esModule", {
@@ -980,7 +1030,7 @@ function findClosestImage(el) {
 exports.findChildrenImages = findChildrenImages;
 exports.findClosestImage = findClosestImage;
 
-},{"./is-image":11}],7:[function(require,module,exports){
+},{"./is-image":12}],7:[function(require,module,exports){
 'use strict';
 
 Object.defineProperty(exports, "__esModule", {
@@ -1029,6 +1079,39 @@ function extend() {
 }
 
 },{}],8:[function(require,module,exports){
+'use strict';
+
+Object.defineProperty(exports, "__esModule", {
+    value: true
+});
+exports.default = flatten;
+
+var _isArray = require('./is-array');
+
+var _isArray2 = _interopRequireDefault(_isArray);
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+/**
+ * @function
+ * Recursively flattens a n-dimensional array.
+ * @param {Array} arrays - Nested array to flatten
+ * @returns {Array} - Flattened array
+ */
+function flatten(arrays) {
+
+    if (!(0, _isArray2.default)(arrays)) {
+
+        return arrays;
+    }
+
+    return arrays.reduce(function (flat, toFlatten) {
+
+        return flat.concat((0, _isArray2.default)(toFlatten) ? flatten(toFlatten) : toFlatten);
+    }, []);
+}
+
+},{"./is-array":10}],9:[function(require,module,exports){
 "use strict";
 
 Object.defineProperty(exports, "__esModule", {
@@ -1049,7 +1132,7 @@ function inView(el) {
     return rect.top >= 0 && rect.left >= 0 && rect.bottom <= (window.innerHeight || doc.clientHeight) && rect.right <= (window.innerWidth || doc.clientWidth);
 }
 
-},{}],9:[function(require,module,exports){
+},{}],10:[function(require,module,exports){
 'use strict';
 
 Object.defineProperty(exports, "__esModule", {
@@ -1067,7 +1150,7 @@ function isArray(el) {
   return Object.prototype.toString.call(el) === '[object Array]';
 }
 
-},{}],10:[function(require,module,exports){
+},{}],11:[function(require,module,exports){
 "use strict";
 
 Object.defineProperty(exports, "__esModule", {
@@ -1085,7 +1168,7 @@ function isFunction(el) {
   return !!(el && el.constructor && el.call && el.apply);
 }
 
-},{}],11:[function(require,module,exports){
+},{}],12:[function(require,module,exports){
 'use strict';
 
 Object.defineProperty(exports, "__esModule", {
@@ -1103,7 +1186,7 @@ function isImage(el) {
   return el.nodeName.toLowerCase() === 'img';
 }
 
-},{}],12:[function(require,module,exports){
+},{}],13:[function(require,module,exports){
 'use strict';
 
 Object.defineProperty(exports, "__esModule", {
@@ -1127,7 +1210,7 @@ function isNodeList(nodes) {
     return (typeof nodes === 'undefined' ? 'undefined' : _typeof(nodes)) === 'object' && /^\[object (HTMLCollection|NodeList|Object)\]$/.test(stringRepr) && typeof nodes.length === 'number' && (nodes.length === 0 || _typeof(nodes[0]) === "object" && nodes[0].nodeType > 0);
 }
 
-},{}],13:[function(require,module,exports){
+},{}],14:[function(require,module,exports){
 "use strict";
 
 Object.defineProperty(exports, "__esModule", {
@@ -1189,7 +1272,7 @@ exports.default = function getSupportedPromise() {
     }
 }();
 
-},{}],14:[function(require,module,exports){
+},{}],15:[function(require,module,exports){
 'use strict';
 
 Object.defineProperty(exports, "__esModule", {

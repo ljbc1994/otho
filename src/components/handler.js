@@ -7,6 +7,7 @@ import isArray from '../utils/is-array';
 import isFunction from '../utils/is-function';
 import isNodeList from '../utils/is-node-list';
 import extend from '../utils/extend';
+import flatten from '../utils/flatten';
 
 /**
  * @class
@@ -106,7 +107,10 @@ export default class Handler {
         
         this._attachWatchers();
                 
-        // Ensure that the placehold and error images are loaded before loading the other images.
+        /**
+         * Ensure that the placehold and error images are 
+         * loaded before loading the other images.
+         */
         if ( this.forcePlacehold && ( this.placehold || this.error ) ) {
             
             let cb = OthoPromise !== undefined ? function() {} : this._initWatchers.bind( this );
@@ -123,7 +127,7 @@ export default class Handler {
         
         if ( this.sync ) {
             
-            return this._syncWatchers();
+            return isArray( this.sync.matrix ) ? this._initMatrix() : this._syncWatchers( this.watchers );
             
         }
         
@@ -190,34 +194,75 @@ export default class Handler {
      * @function 
      * Initialise the watchers synchronously.
      */
-    _syncWatchers() {
+    _initMatrix() {
+        
+        if ( this.watchers.length !== this.sync.matrix.length ) {
+            
+            throw 'The matrix must contain the same number of items as the number of images';
+            
+        }
+        
+        let self = this;
+        let ordered = {};
+        let matrix = [];
+        
+        self.sync.matrix.forEach( ( value, index ) => {
+            
+            if ( isArray( ordered[ value ] ) ) {
+                
+                ordered[ value ].push( self.watchers[ index ] );
+                
+            } else {
+                
+                ordered[ value ] = [ self.watchers[ index ] ];
+                
+            }
+            
+        } );
+        
+        Object
+            .keys( ordered )
+            .sort( ( a, b ) => a - b )
+            .forEach( ( value, index ) => matrix[ index ] = ordered[ value ] );
+        
+        return this._syncWatchers( matrix );
+        
+    }
+    
+    /**
+     * @function 
+     * Initialise the watchers synchronously.
+     */
+    _syncWatchers( watchers ) {
         
         let self = this;
         let { delay, perLoad } = self.sync;
         let index = 0;
-        let maxIndex = Math.ceil( self.watchers.length / perLoad );
+        let maxIndex = Math.ceil( watchers.length / perLoad );
         
         const executeQueue = () => {
             
             index++;
             
             if ( index <= maxIndex ) {
-                 
-                Watcher.queue( 
-                    self.watchers.slice( perLoad * ( index - 1 ), perLoad * index ), 
-                    setTimeout.bind( null, executeQueue, delay ) 
-                );
                 
+                let start = perLoad * ( index - 1 );
+                let end = perLoad * index;
+                
+                let flattened = flatten( watchers.slice( start, end ) );
+                
+                Watcher.queue( flattened, setTimeout.bind( null, executeQueue, delay ) );
+                       
             }
             
         };
         
         self.watchers.map( ( watcher ) => watcher._setup() );
         
-        executeQueue();
+        return executeQueue();
         
     }
-    
+        
     /**
      * @function 
      * Called when an image has been loaded, computes the

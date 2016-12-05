@@ -101,7 +101,18 @@
                 els: document.getElementsByClassName('el'),
                 placehold: 'http://placehold.it/200x200',
                 error: 'http://placehold.it/500x500',
-                inView: true
+                sync: {
+                    delay: 2000,
+                    matrix: [
+                        2, 2, 2, 
+                        2, 1, 2, 
+                        2, 2, 2, 
+                        3, 4, 5, 
+                        6, 7, 8,
+                        7, 6, 3, 
+                        2
+                    ]
+                }
             });
             
         </script>
