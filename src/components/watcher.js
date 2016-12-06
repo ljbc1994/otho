@@ -1,10 +1,10 @@
-import OthoPromise from '../utils/promise';
+import DeferredImage from './deferred-image';
+
 import isArray from '../utils/is-array';
 import isImage from '../utils/is-image';
 import inView from '../utils/in-view';
 import { findClosestImage } from '../utils/dom-traversal';
 import { removeClass, addClass, getBackgroundImage, setBackgroundImage } from '../utils/style-manipulation';
-import DeferredImage from './deferred-image';
 
 /**
  * @class
@@ -94,8 +94,12 @@ export default class Watcher {
      */
     init( reinit ) {
         
-        if ( !reinit ) this._setup();
+        if ( !reinit ) {
+            
+            this._setup();
         
+        }
+            
         addClass( this.el, this.imageLoading );
         
         this.pseudo = new DeferredImage( {
@@ -103,12 +107,6 @@ export default class Watcher {
             loaded: this._loaded.bind( this ),
             failed: this._error.bind( this )
         } );
-        
-        if ( OthoPromise !== undefined ) {
-            
-            return this.pseudo.$promise;
-            
-        }
         
         return this;
         

@@ -1,6 +1,5 @@
 import Watcher from './watcher';
 import DeferredImage from './deferred-image';
-import OthoPromise from '../utils/promise';
 
 import { syncOptions } from '../config/options';
 import isArray from '../utils/is-array';
@@ -113,15 +112,7 @@ export default class Handler {
          */
         if ( this.forcePlacehold && ( this.placehold || this.error ) ) {
             
-            let cb = OthoPromise !== undefined ? function() {} : this._initWatchers.bind( this );
-            
-            let finished = DeferredImage.wait( [ this.error, this.placehold ], cb );
-            
-            if ( OthoPromise !== undefined ) {
-                
-                return finished.then( this._initWatchers.bind( this ) );
-                
-            }
+            return DeferredImage.wait( [ this.error, this.placehold ], this._initWatchers.bind( this ) );
             
         }
         
@@ -169,24 +160,15 @@ export default class Handler {
      * @function 
      * Initialise the watchers to show the placeholder and
      * load the images. 
-     * @returns {Promise|Array<Object>} A promise that waits for the watcher
-     * instances to resolve or an array of watchers.
+     * @returns {Array<Object>} An array of watchers.
      */
     _initWatchers() {
         
-        let watcherInstances = this.watchers.map( ( watcher ) => {
+        return this.watchers.map( ( watcher ) => {
             
             return this.inView ? watcher.watchView() : watcher.init();
             
         } );
-            
-        if ( OthoPromise !== undefined ) {
-            
-            return OthoPromise.type.all( watcherInstances );
-            
-        }
-        
-        return watcherInstances;
         
     }
     
@@ -206,7 +188,7 @@ export default class Handler {
         
         if ( this.watchers.length !== this.sync.matrix.length ) {
             
-            throw 'The matrix must contain the same number of items as the number of images';
+            throw new Error( 'The matrix must contain the same number of items as the number of images' );
             
         }
         
@@ -240,7 +222,9 @@ export default class Handler {
         Object
             .keys( ordered )
             .sort( ( a, b ) => a - b )
-            .forEach( ( value, index ) => matrix[ index ] = ordered[ value ] );
+            .forEach( ( value, index ) => { 
+                matrix[ index ] = ordered[ value ];
+            } );
         
         return this._syncWatchers( matrix );
         

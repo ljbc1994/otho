@@ -12,10 +12,6 @@ Object.defineProperty(exports, "__esModule", {
 
 var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
 
-var _promise = require('../utils/promise');
-
-var _promise2 = _interopRequireDefault(_promise);
-
 var _isArray = require('../utils/is-array');
 
 var _isArray2 = _interopRequireDefault(_isArray);
@@ -52,14 +48,12 @@ var DeferredImage = function () {
             }
 
             var noImages = src.length;
-            var images = [];
-            var usePromise = _promise2.default !== undefined;
 
             var tempLoaded = function tempLoaded() {
 
                 noImages--;
 
-                if (noImages === 0 && !usePromise) {
+                if (noImages === 0) {
 
                     loaded();
                 }
@@ -67,19 +61,12 @@ var DeferredImage = function () {
 
             for (var i = 0; i < src.length; i++) {
 
-                var deferred = new DeferredImage({
+                new DeferredImage({
                     src: src[i],
                     loaded: tempLoaded.bind(this),
                     failed: tempLoaded.bind(this)
                 });
-
-                if (usePromise) {
-
-                    images.push(deferred.$promise);
-                }
             }
-
-            return usePromise ? _promise2.default.type.all(images) : null;
         }
 
         /**
@@ -122,15 +109,6 @@ var DeferredImage = function () {
 
             self.pseudo.addEventListener('load', this._loaded);
             self.pseudo.addEventListener('error', this._failed);
-
-            if (_promise2.default !== undefined) {
-
-                this.$promise = _promise2.default.instance(function (resolve, reject) {
-
-                    self.pseudo.addEventListener('load', resolve);
-                    self.pseudo.addEventListener('error', reject);
-                });
-            }
         }
     }]);
 
@@ -139,7 +117,7 @@ var DeferredImage = function () {
 
 exports.default = DeferredImage;
 
-},{"../utils/is-array":10,"../utils/promise":14}],2:[function(require,module,exports){
+},{"../utils/is-array":10}],2:[function(require,module,exports){
 'use strict';
 
 Object.defineProperty(exports, "__esModule", {
@@ -157,10 +135,6 @@ var _watcher2 = _interopRequireDefault(_watcher);
 var _deferredImage = require('./deferred-image');
 
 var _deferredImage2 = _interopRequireDefault(_deferredImage);
-
-var _promise = require('../utils/promise');
-
-var _promise2 = _interopRequireDefault(_promise);
 
 var _options = require('../config/options');
 
@@ -293,14 +267,7 @@ var Handler = function () {
              */
             if (this.forcePlacehold && (this.placehold || this.error)) {
 
-                var cb = _promise2.default !== undefined ? function () {} : this._initWatchers.bind(this);
-
-                var finished = _deferredImage2.default.wait([this.error, this.placehold], cb);
-
-                if (_promise2.default !== undefined) {
-
-                    return finished.then(this._initWatchers.bind(this));
-                }
+                return _deferredImage2.default.wait([this.error, this.placehold], this._initWatchers.bind(this));
             }
 
             if (this.sync) {
@@ -346,8 +313,7 @@ var Handler = function () {
          * @function 
          * Initialise the watchers to show the placeholder and
          * load the images. 
-         * @returns {Promise|Array<Object>} A promise that waits for the watcher
-         * instances to resolve or an array of watchers.
+         * @returns {Array<Object>} An array of watchers.
          */
 
     }, {
@@ -355,37 +321,41 @@ var Handler = function () {
         value: function _initWatchers() {
             var _this = this;
 
-            var watcherInstances = this.watchers.map(function (watcher) {
+            return this.watchers.map(function (watcher) {
 
                 return _this.inView ? watcher.watchView() : watcher.init();
             });
-
-            if (_promise2.default !== undefined) {
-
-                return _promise2.default.type.all(watcherInstances);
-            }
-
-            return watcherInstances;
         }
 
         /**
          * @function 
-         * Initialise the watchers synchronously.
+         * Initialise the watchers matrix, order the synchronous execution
+         * of watchers according to the matrix.
+         * @returns { void } - Execute the watchers synchronously
          */
 
     }, {
         key: '_initMatrix',
         value: function _initMatrix() {
 
+            if ((0, _isFunction2.default)(this.sync.matrix)) {
+
+                this.sync.matrix = this.sync.matrix(this.watchers);
+            }
+
             if (this.watchers.length !== this.sync.matrix.length) {
 
-                throw 'The matrix must contain the same number of items as the number of images';
+                throw new Error('The matrix must contain the same number of items as the number of images');
             }
 
             var self = this;
             var ordered = {};
             var matrix = [];
 
+            /**
+             * Iterate through the matrix and pair
+             * the watcher with its specified position.
+             */
             self.sync.matrix.forEach(function (value, index) {
 
                 if ((0, _isArray2.default)(ordered[value])) {
@@ -397,10 +367,15 @@ var Handler = function () {
                 }
             });
 
+            /**
+             * Sort the keys in ascending order and 
+             * move the ordered object's pairs to
+             * the matrix array.
+             */
             Object.keys(ordered).sort(function (a, b) {
                 return a - b;
             }).forEach(function (value, index) {
-                return matrix[index] = ordered[value];
+                matrix[index] = ordered[value];
             });
 
             return this._syncWatchers(matrix);
@@ -409,6 +384,8 @@ var Handler = function () {
         /**
          * @function 
          * Initialise the watchers synchronously.
+         * @params {Array} watchers - List of watchers to synchronously load
+         * @returns {void} - Queue image loading execution
          */
 
     }, {
@@ -431,7 +408,6 @@ var Handler = function () {
 
                     var start = perLoad * (index - 1);
                     var end = perLoad * index;
-
                     var flattened = (0, _flatten2.default)(watchers.slice(start, end));
 
                     _watcher2.default.queue(flattened, setTimeout.bind(null, executeQueue, delay));
@@ -551,7 +527,7 @@ var Handler = function () {
 
 exports.default = Handler;
 
-},{"../config/options":4,"../utils/extend":7,"../utils/flatten":8,"../utils/is-array":10,"../utils/is-function":11,"../utils/is-node-list":13,"../utils/promise":14,"./deferred-image":1,"./watcher":3}],3:[function(require,module,exports){
+},{"../config/options":4,"../utils/extend":7,"../utils/flatten":8,"../utils/is-array":10,"../utils/is-function":11,"../utils/is-node-list":13,"./deferred-image":1,"./watcher":3}],3:[function(require,module,exports){
 'use strict';
 
 Object.defineProperty(exports, "__esModule", {
@@ -560,9 +536,9 @@ Object.defineProperty(exports, "__esModule", {
 
 var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
 
-var _promise = require('../utils/promise');
+var _deferredImage = require('./deferred-image');
 
-var _promise2 = _interopRequireDefault(_promise);
+var _deferredImage2 = _interopRequireDefault(_deferredImage);
 
 var _isArray = require('../utils/is-array');
 
@@ -579,10 +555,6 @@ var _inView2 = _interopRequireDefault(_inView);
 var _domTraversal = require('../utils/dom-traversal');
 
 var _styleManipulation = require('../utils/style-manipulation');
-
-var _deferredImage = require('./deferred-image');
-
-var _deferredImage2 = _interopRequireDefault(_deferredImage);
 
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
@@ -681,7 +653,10 @@ var Watcher = function () {
         key: 'init',
         value: function init(reinit) {
 
-            if (!reinit) this._setup();
+            if (!reinit) {
+
+                this._setup();
+            }
 
             (0, _styleManipulation.addClass)(this.el, this.imageLoading);
 
@@ -690,11 +665,6 @@ var Watcher = function () {
                 loaded: this._loaded.bind(this),
                 failed: this._error.bind(this)
             });
-
-            if (_promise2.default !== undefined) {
-
-                return this.pseudo.$promise;
-            }
 
             return this;
         }
@@ -887,7 +857,7 @@ var Watcher = function () {
 
 exports.default = Watcher;
 
-},{"../utils/dom-traversal":6,"../utils/in-view":9,"../utils/is-array":10,"../utils/is-image":12,"../utils/promise":14,"../utils/style-manipulation":15,"./deferred-image":1}],4:[function(require,module,exports){
+},{"../utils/dom-traversal":6,"../utils/in-view":9,"../utils/is-array":10,"../utils/is-image":12,"../utils/style-manipulation":14,"./deferred-image":1}],4:[function(require,module,exports){
 'use strict';
 
 Object.defineProperty(exports, "__esModule", {
@@ -1211,68 +1181,6 @@ function isNodeList(nodes) {
 }
 
 },{}],14:[function(require,module,exports){
-"use strict";
-
-Object.defineProperty(exports, "__esModule", {
-    value: true
-});
-/**
- * @function
- * Checks whether the browser supports native promises.
- * @returns {Boolean} - Whether the browser supports native promises.
- */
-function hasNativeSupport() {
-    return typeof Promise !== "undefined" && Promise.toString().indexOf("[native code]") !== -1;
-}
-
-/**
- * @Object
- * Checks whether variants of promises are supported and returns
- * that promise with an instance if it's native as well as the
- * promise object.
- * Supports:
- *  - Native implementations and the Bluebird library
- *  - jQuery / Zepto implementations
- *  - Kris Kowal's Q implementation
- * Notes: Check whether the promise is an A+ implementation.
- * @returns {Object} - An instance of the promise as well as
- * the promise object.
- */
-
-exports.default = function getSupportedPromise() {
-
-    var _Promise = void 0,
-        lib = void 0;
-
-    if (hasNativeSupport()) {
-
-        _Promise = Promise;
-    } else if ((lib = window.jQuery || window.Zepto) && lib.promise !== null) {
-
-        _Promise = lib.promise;
-    } else if (window.Q !== null) {
-
-        _Promise = window.Q;
-    }
-
-    if (_Promise !== null) {
-
-        return {
-
-            instance: function instance(fn) {
-                return hasNativeSupport() ? new _Promise(fn) : _Promise(fn);
-            },
-
-            type: _Promise
-
-        };
-    } else {
-
-        return undefined;
-    }
-}();
-
-},{}],15:[function(require,module,exports){
 'use strict';
 
 Object.defineProperty(exports, "__esModule", {

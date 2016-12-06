@@ -1,4 +1,3 @@
-import OthoPromise from '../utils/promise';
 import isArray from '../utils/is-array';
 
 /**
@@ -27,14 +26,12 @@ export default class DeferredImage {
         }
             
         let noImages = src.length;
-        let images = [];
-        let usePromise = OthoPromise !== undefined;
         
         const tempLoaded = () => {
                       
             noImages--;
             
-            if ( noImages === 0 && !usePromise ) {
+            if ( noImages === 0 ) {
                 
                 loaded();
             
@@ -44,21 +41,13 @@ export default class DeferredImage {
         
         for ( let i = 0; i < src.length; i++ ) {
             
-            let deferred = new DeferredImage( {
+            new DeferredImage( {
                 src: src[i],
                 loaded: tempLoaded.bind( this ),
                 failed: tempLoaded.bind( this )
             } );    
             
-            if ( usePromise ) {
-                
-                images.push( deferred.$promise );
-            
-            }
-                
         }
-        
-        return usePromise ? OthoPromise.type.all( images ) : null;
         
     }
     
@@ -91,17 +80,6 @@ export default class DeferredImage {
         
         self.pseudo.addEventListener( 'load', this._loaded );
         self.pseudo.addEventListener( 'error', this._failed );
-        
-        if ( OthoPromise !== undefined ) {
-            
-            this.$promise = OthoPromise.instance( ( resolve, reject ) => {
-
-                self.pseudo.addEventListener( 'load', resolve );
-                self.pseudo.addEventListener( 'error', reject );
-                
-            } );
-            
-        }
         
     }
     
