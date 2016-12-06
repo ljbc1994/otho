@@ -136,7 +136,13 @@
                 sync: {
                     delay: 500,
                     matrix: function(watchers) {
-                        console.log(watchers.length);
+                        var len = watchers.length, arr = [];
+                        
+                        for (var i = 0; i < len; i++) {
+                            arr.push( i );
+                        }
+                        
+                        return arr;
                     }
                 }
             });

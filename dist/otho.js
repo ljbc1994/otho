@@ -272,7 +272,7 @@ var Handler = function () {
 
             if (this.sync) {
 
-                return (0, _isArray2.default)(this.sync.matrix) || (0, _isFunction2.default)(this.sync.matrix) ? this._initMatrix() : this._syncWatchers(this.watchers);
+                return (0, _isArray2.default)(this.sync.matrix) ? this._initMatrix() : this._syncWatchers(this.watchers);
             }
 
             return this._initWatchers();
