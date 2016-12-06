@@ -211,7 +211,7 @@ Otho.load({
 })
 ```
 
-### matrix (Array|Function)
+#### matrix (Array|Function)
 
 Define a matrix that will be used to load the images in a specified order. **Note: the matrix
 array must contain the same number of items as the number of images being loaded.**
@@ -237,13 +237,9 @@ matrix of image ordering!
 Otho.load({
     sync: {
         matrix: function(watchers) {
-            var arr = [];
-            
-            for (var i = 0; i < watchers.length; i++) {
-                arr.push(i);
-            }
-            
-            return arr;
+            return watchers.reverse().map(function(watcher, index) {
+                return index;
+            });
         }
     }
 })
