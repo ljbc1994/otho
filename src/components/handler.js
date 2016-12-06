@@ -118,7 +118,7 @@ export default class Handler {
         
         if ( this.sync ) {
             
-            return isArray( this.sync.matrix ) ? this._initMatrix() : this._syncWatchers( this.watchers );
+            return isArray( this.sync.matrix ) || isFunction( this.sync.matrix ) ? this._initMatrix() : this._syncWatchers( this.watchers );
             
         }
         

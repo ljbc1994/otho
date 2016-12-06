@@ -126,7 +126,6 @@
         <img class="el" data-o-src="http://www3.open.ac.uk/events/2009225_50828.jpg">
         <img class="el" data-o-src="http://www.rtjsjg.com/data/out/243/5859184-high-resolution-images.jpg">
         
-
         <script src="../../dist/otho.min.js"></script>
         <script>
             
@@ -136,15 +135,9 @@
                 error: 'http://placehold.it/500x500',
                 sync: {
                     delay: 500,
-                    matrix: [
-                        5, 4, 4, 4, 4, 4, 5, 
-                        4, 6, 3, 3, 3, 6, 4, 
-                        4, 3, 7, 2, 7, 3, 4,
-                        10, 9, 8, 1, 8, 9, 10, 
-                        4, 3, 7, 2, 7, 3, 4, 
-                        4, 6, 3, 3, 3, 6, 4,
-                        5, 4, 4, 4, 4, 4, 5
-                    ]
+                    matrix: function(watchers) {
+                        console.log(watchers.length);
+                    }
                 }
             });
             
