@@ -183,6 +183,52 @@ When an image has loaded (success or fail), the `progress` callback will be exec
     })
 ```
 
+### Synchronous Options
+
+The `sync` option must be set to `true`.
+
+#### perLoad (Number)
+
+The number of images to load before loading the next lot of images.
+
+```js
+    Otho.load({
+        sync: {
+            perLoad: 2
+        }
+    })
+```
+
+#### delay (Number)
+
+The delay (in ms) before loading the next lot of images.
+
+```js
+    Otho.load({
+        sync: {
+            delay: 1000
+        }
+    })
+```
+
+### matrix (Array)
+
+Define a matrix that will be used to load the images in a specified order.
+
+```js
+    Otho.load({
+        sync: {
+            matrix: [
+                3, 3, 3, 3, 3, 3, 3,
+                3, 2, 2, 2, 2, 2, 3,
+                3, 2, 2, 1, 2, 2, 3,
+                3, 2, 2, 2, 2, 2, 3,
+                3, 3, 3, 3, 3, 3, 3
+            ]
+        }
+    })
+```
+
 
 ## Issues
 
