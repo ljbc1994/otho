@@ -32,7 +32,7 @@ Coming soon...
 
 ## Documentation
 
-### Options
+### Programmatic Options
 
 You can configure Otho by passing options to `Otho.load`. These are the default options:
 
@@ -117,15 +117,6 @@ Otho.load({
 })
 ```
 
-#### sync (Boolean)
-
-Synchronously load the image(s). Wait for the previous image(s) to load before attempting to load the next lot. See [] for sync options.
-
-```js
-Otho.load({
-    sync: true
-})
-```
 
 #### imageLoaded (String|null)
 
@@ -185,8 +176,6 @@ Otho.load({
 
 ### Synchronous Options
 
-The `sync` option must be set to `true`.
-
 #### perLoad (Number)
 
 The number of images to load before loading the next lot of images.
@@ -245,6 +234,63 @@ Otho.load({
 })
 ```
 
+### Markup Options
+
+You can override programmatic options by setting `data-o-*` attributes on the element containing the image.
+
+#### data-o-placehold
+
+Specify which image will be shown whilst the desired image is being loaded.
+
+The following example ensures that the first image will display `http://usethis.instead` as the placehold image as opposed to the others which will use `http://placehold.it/200x200`. 
+
+```js
+// Default placehold used if data-o-placehold is not specified.
+Otho.load({
+    placehold: 'http://placehold.it/200x200'
+})
+```
+
+```html
+<img data-o-placehold="http://usethis.instead" data-o-src="http://pretty.image"/>
+<img data-o-src="http://pretty.image1"/>
+<img data-o-src="http://pretty.image2"/>
+```
+
+See [placehold](#placehold-stringnull).
+
+#### data-o-error
+
+Specify which image will be shown if an error occurs.
+
+The following example ensures that the first image will display `http://usethis.forerror` as the error image as opposed to the others which will use `http://placehold.it/200x200`. 
+
+```js
+// Default placehold used if data-o-placehold is not specified.
+Otho.load({
+    error: 'http://placehold.it/200x200'
+})
+```
+
+```html
+<img data-o-error="http://usethis.forerror" data-o-src="http://pretty.image"/>
+<img data-o-src="http://pretty.image1"/>
+<img data-o-src="http://pretty.image2"/>
+```
+
+See [error](#error-stringnull).
+
+#### data-o-background
+
+Coming soon...
+
+#### data-o-loaded
+
+Coming soon...
+
+#### data-o-loading
+
+Coming soon..
 
 
 ## Issues
