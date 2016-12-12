@@ -238,7 +238,7 @@ Otho.load({
 
 You can override programmatic options by setting `data-o-*` attributes on the element containing the image.
 
-#### data-o-placehold
+#### data-o-placehold (String)
 
 Specify which image will be shown whilst the desired image is being loaded.
 
@@ -259,7 +259,7 @@ Otho.load({
 
 See [placehold](#placehold-stringnull).
 
-#### data-o-error
+#### data-o-error (String)
 
 Specify which image will be shown if an error occurs.
 
@@ -280,18 +280,61 @@ Otho.load({
 
 See [error](#error-stringnull).
 
-#### data-o-background
+#### data-o-background (Boolean)
 
-Coming soon...
+Specify whether Otho should look for and load the background image of the element. 
+
+```css
+.el {
+   background: url('http://pretty.image1');
+}
+```
+
+```html
+<div class="el" data-o-background="true" data-o-placehold="http://placehold.it/200x200"/>
+```
+
+See [background](#background-boolean).
 
 #### data-o-loaded
 
-Coming soon...
+Specify which class to apply to the element when the image has successfully loaded.
+
+The following example ensures that the first image will have `special-loaded` applied to the element as opposed to the others which will have `i-have-loaded` applied. 
+
+```js
+Otho.load({
+    imageLoaded: 'i-have-loaded'
+})
+```
+
+```html
+<img data-o-loaded="special-loaded" data-o-src="http://pretty.image"/>
+<img data-o-src="http://pretty.image1"/>
+<img data-o-src="http://pretty.image2"/>
+```
+
+See [loaded](#imageloaded-stringnull)
 
 #### data-o-loading
 
-Coming soon..
+Specify which class to apply to the element when the image is loading.
 
+The following example ensures that the first image will have `special-loading` applied to the element as opposed to the others which will have `i-am-loading` applied. 
+
+```js
+Otho.load({
+    imageLoading: 'i-am-loading'
+})
+```
+
+```html
+<img data-o-loading="special-loading" data-o-src="http://pretty.image"/>
+<img data-o-src="http://pretty.image1"/>
+<img data-o-src="http://pretty.image2"/>
+```
+
+See [loading](#imageloading-stringnull)
 
 ## Issues
 
