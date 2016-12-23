@@ -120,9 +120,10 @@ export default class Watcher {
         this.hasBackground = false;
         
         this._getElement( this.el );
+		
         this.toLoad = this._getImage();
         this._setImage( this.placehold );
-        
+		
         removeClass( this.el, this.imageLoaded, this.imageLoading );
         
     }
@@ -221,7 +222,7 @@ export default class Watcher {
     _getImage() {
         
         return this.background ? getBackgroundImage( this.img ) : this.img.getAttribute( 'data-o-src' );
-        
+		
     }
     
     /**

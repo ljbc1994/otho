@@ -1,7 +1,6 @@
-var assert = require('assert');
-
 import isNodeList from '../../src/utils/is-node-list';
 
+var assert = require('assert');
 
 describe( '#isNodeList( nodes )', function() {
     

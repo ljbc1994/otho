@@ -1,7 +1,6 @@
-var assert = require('assert');
-
 import { addClass, removeClass, getBackgroundImage, setBackgroundImage } from '../../src/utils/style-manipulation';
 
+var assert = require('assert');
 
 describe( '#addClass( el )', function() {
     

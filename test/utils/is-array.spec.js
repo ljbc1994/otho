@@ -1,7 +1,6 @@
-var assert = require('assert');
-
 import isArray from '../../src/utils/is-array';
 
+var assert = require('assert');
 
 describe( '#isArray( el )', function() {
     

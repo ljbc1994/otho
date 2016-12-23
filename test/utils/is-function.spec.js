@@ -1,7 +1,6 @@
-var assert = require('assert');
-
 import isFunction from '../../src/utils/is-function';
 
+var assert = require('assert');
 
 describe( '#isFunction( el )', function() {
     

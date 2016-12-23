@@ -1,7 +1,6 @@
-var assert = require('assert');
-
 import { findChildrenImages, findClosestImage } from '../../src/utils/dom-traversal';
 
+var assert = require('assert');
 
 describe('Dom Traversal', function() {
     

@@ -18,7 +18,7 @@ const options = commandArgs( [
     { name: 'command', alias: 'c', type: String }
 ] );
 
-const desiredPath = path.resolve( path.dirname( __filename ), '../', options.src );
+const desiredPath = path.resolve( __dirname, '../', options.src );
 
 const chockOpts = { ignored: /[\/\\]\./,  persistent: true, cwd: desiredPath };
 

@@ -1,7 +1,6 @@
-var assert = require('assert');
-
 import isImage from '../../src/utils/is-image';
 
+var assert = require('assert');
 
 describe( '#isImage( el )', function() {
     

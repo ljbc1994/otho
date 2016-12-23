@@ -1,7 +1,6 @@
-var assert = require('assert');
-
 import extend from '../../src/utils/extend';
 
+var assert = require('assert');
 
 describe( '#extend()', function() {
    

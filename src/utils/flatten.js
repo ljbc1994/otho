@@ -10,7 +10,7 @@ export default function flatten( arrays ) {
     
     if ( !isArray( arrays ) ) {
     
-        return arrays;
+        throw new Error( `You need to provide an array, instead you have specified a ${ typeof arrays }` );
         
     }
     

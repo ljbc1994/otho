@@ -25,6 +25,7 @@ export default class DeferredImage {
             
         }
             
+		let images = [];
         let noImages = src.length;
         
         const tempLoaded = () => {
@@ -33,7 +34,7 @@ export default class DeferredImage {
             
             if ( noImages === 0 ) {
                 
-                loaded();
+                loaded( images );
             
             }
                 
@@ -41,11 +42,13 @@ export default class DeferredImage {
         
         for ( let i = 0; i < src.length; i++ ) {
             
-            new DeferredImage( {
+            let deferred = new DeferredImage( {
                 src: src[i],
                 loaded: tempLoaded.bind( this ),
                 failed: tempLoaded.bind( this )
-            } );    
+            } );
+			
+			images.push( deferred );
             
         }
         
