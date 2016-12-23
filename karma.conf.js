@@ -1,6 +1,6 @@
 module.exports = function(config) {
 	
-  config.set({
+  var settings = {
 
     basePath: '',
 
@@ -46,6 +46,10 @@ module.exports = function(config) {
 	  IE10: {
 		base: 'IE',
 		'x-ua-compatible': 'IE=EmulateIE10'
+	  },
+	  Chrome_Travis: {
+		  base: 'Chrome',
+		  flags: [ '--no-sandbox' ]
 	  }
 	},
 	  
@@ -53,6 +57,14 @@ module.exports = function(config) {
 
     concurrency: Infinity
 	  
-  })
+  };
+	
+  if ( process.env.TRAVIS ) {
+	  
+	  settings.browsers = [ 'Chrome_Travis' ]
+	  
+  }
+	
+  config.set( settings );
   
 }
