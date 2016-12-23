@@ -1,6 +1,6 @@
 # otho
 
-[![Build Status](https://travis-ci.org/fulhamcrazy/otho.svg?branch=master)](https://travis-ci.org/fulhamcrazy/otho)
+[![Build Status](https://travis-ci.org/ljbc1994/otho.svg?branch=master)](https://travis-ci.org/fulhamcrazy/otho)
 
 Otho is a tiny vanilla js library that simplifies managing and manipulating image loading.
 

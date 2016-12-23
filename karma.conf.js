@@ -59,12 +59,6 @@ module.exports = function(config) {
 	  
   };
 	
-  if ( process.env.TRAVIS ) {
-	  
-	  settings.browsers = [ 'Chrome_Travis' ]
-	  
-  }
-	
   config.set( settings );
   
 }
